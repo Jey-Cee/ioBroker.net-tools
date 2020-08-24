@@ -1,0 +1,86 @@
+{
+    "common": {
+        "name": "net-tools",
+        "version": "0.1.0",
+        "news": {
+            "0.1.0": {}
+        },
+        "title": "Net tools",
+        "desc": {
+            "en": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
+            "de": "Dieser Adapter fragt zyklisch konfigurierte IPs ab, kann Wake-on-LAN-Pakete senden und nach offenen Ports suchen.",
+            "ru": "Этот адаптер циклически опрашивает настроенные IP-адреса, может отправлять пакеты wake-on-lan и сканировать открытые порты.",
+            "pt": "Este adaptador cíclico pesquisa IPs configurados, pode enviar pacotes wake-on-lan e fazer a varredura para portas abertas.",
+            "nl": "Deze adapter pollt cyclisch geconfigureerde IP-adressen, kan wake-on-lan-pakketten verzenden en scannen op open poorten.",
+            "fr": "Cet adaptateur interroge cycliquement les adresses IP configurées, peut envoyer des packages Wake-on-LAN et rechercher les ports ouverts.",
+            "it": "Questo adattatore esegue il polling ciclico degli IP configurati, può inviare pacchetti Wake-on-Lan e cercare porte aperte.",
+            "es": "Este adaptador sondea cíclicamente las IP configuradas, puede enviar paquetes de activación en lan y buscar puertos abiertos.",
+            "pl": "Ten adapter cyklicznie odpytuje skonfigurowane adresy IP, może wysyłać pakiety wake-on-lan i skanować w poszukiwaniu otwartych portów.",
+            "zh-cn": "该适配器循环轮询配置的IP，可以发送局域网唤醒软件包并扫描打开的端口。"
+        },
+        "authors": [
+            "jey-cee <jey-cee@live.com>"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "mode": "daemon",
+        "compact": true,
+        "availableModes": [
+            "daemon",
+            "schedule"
+        ],
+        "schedule": "*/1 * * * *",
+        "readme": "https://github.com/jey-cee/ioBroker.net-tools/blob/master/README.md",
+        "loglevel": "info",
+        "icon": "net-tools.png",
+        "keywords": [
+            "poll",
+            "ping",
+            "ip",
+            "wake-on-lan",
+            "port scan"
+        ],
+        "extIcon": "https://raw.githubusercontent.com/jey-cee/ioBroker.net-tools/master/admin/net-tools.png",
+        "type": "network",
+        "materialize": true,
+        "messagebox": true,
+        "dependencies": {
+            "js-controller": ">=1.2.0",
+            "discovery": ">=2.3.10"
+        }
+    },
+    "native": {
+        "interval": 60000
+    },
+    "instanceObjects": [
+        {
+            "_id": "localhost",
+            "type": "channel",
+            "common": {
+                "name": "localhost"
+            }
+        },
+        {
+            "_id": "localhost.ports",
+            "type": "state",
+            "common": {
+                "name": "Open Ports",
+                "read": true,
+                "write": false,
+                "role": "list",
+                "type": "array"
+            }
+        },
+        {
+            "_id": "discover",
+            "type": "state",
+            "common": {
+                "name": "discover",
+                "read": false,
+                "write": true,
+                "role": "button",
+                "type": "boolean"
+            }
+        }
+    ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "iobroker.net-tools",
+  "description": "This adapter cyclic polls configured IPs.",
+  "version": "0.1.0",
+  "author": "Jey Cee <jey-cee@live.com>",
+  "contributors": [
+    "bluefox <dogafox@gmail.com>",
+    "Viktor Demydov <vdemidov@gmail.com>"
+  ],
+  "homepage": "https://github.com/jey-cee/ioBroker.net-tools",
+  "license": "MIT",
+  "keywords": [
+    "ioBroker",
+    "ping",
+    "home automation",
+    "wake-on-lan",
+    "port scan"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jey-cee/ioBroker.net-tools"
+  },
+  "devDependencies": {
+    "@alcalzone/release-script": "^1.4.1",
+    "gulp": "^4.0.2",
+    "mocha": "^8.0.1",
+    "chai": "^4.2.0"
+  },
+  "bugs": {
+    "url": "https://github.com/jey-cee/ioBroker.net-tools/issues"
+  },
+  "main": "main.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha --exit",
+    "release": "release-script"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^2.3.0",
+    "wol": "^1.0.7",
+    "node-arp": "^1.0.6",
+    "evilscan": "^1.7.5"
+  }
+}
