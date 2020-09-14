@@ -19,6 +19,7 @@ const portscanner = require('evilscan');
 const ping        = require('./lib/ping');
 const adapterName = require('./package.json').name.split('.').pop();
 const objects = require('./lib/object_definition').object_definitions;
+const oui = require('oui');
 let adapter;
 
 let timer      = null;
@@ -79,6 +80,12 @@ async function processMessage(obj) {
             }
             break;
         }
+        case 'wol': {
+            if (obj.callback && obj.message) {
+                adapter.sendTo(obj.from, obj.command, await wake(obj.message), obj.callback);
+            }
+            break;
+        }
         case 'deleteDevice': {
             await delDevice(obj.message)
                 .then(result => {
@@ -129,7 +136,9 @@ async function handleStateChange(id, state) {
  * @param {string} id - object id for host
  * @param {string} ip - ip address like 127.0.0.1
  */
-function portScan(id, ip){
+async function portScan(id, ip){
+    adapter.log.info(`Scanning for open ports at ${id}, please wait`);
+    await adapter.setStateAsync(id + '.ports', 'Scanning, please wait')
     let openPorts = [];
     let options = {
         target: ip,
@@ -156,6 +165,7 @@ function portScan(id, ip){
     scanner.on('done',function() {
         // finished !
         adapter.setState(id + '.ports', openPorts);
+        adapter.log.info('Port scan finished');
     });
 
     scanner.run();
@@ -192,7 +202,8 @@ async function discover(){
 
     for(const device of result.devices){
         if(device._addr !== '127.0.0.1' && device._addr !== '0.0.0.0'){
-            let mac = await getMac(device._addr);
+            const mac = await getMac(device._addr);
+            const vendor = oui(mac);
             let exists = false;
 
             for(const entry of oldDevices){
@@ -203,7 +214,8 @@ async function discover(){
                     const idName = mac.replace(/:/g, '');
                     await adapter.extendObjectAsync(adapter.namespace + '.' + idName, {
                         native: {
-                            ip: device._addr
+                            ip: device._addr,
+                            vendor: vendor
                         }
                     })
                 }
@@ -227,13 +239,26 @@ function getMac(ip){
 }
 
 async function addDevice(ip, name, enabled, mac){
-    if(!mac){
+    let idName, vendor = '';
+
+    if (!mac) {
         mac = await getMac(ip);
-        if(mac === '(unvollständig)'){
-            adapter.log.info(`Could not add device, ${ip}, because could not find the mac address`);
+
+        if (mac === '(unvollständig)' || mac === undefined) {
+            adapter.log.info(`Could not find the mac address for ${ip}`);
+            idName = name;
+        } else {
+            idName = mac.replace(/:/g, '');
+            vendor = oui(mac);
+            vendor = vendor.replace(/\n/g, ', ');
         }
+    } else {
+        idName = mac.replace(/:/g, '');
+        vendor = oui(mac);
+        vendor = vendor.replace(/\n/g, ', ');
     }
-    const idName = mac.replace(/:/g, '');
+
+
 
     await adapter.setObjectAsync(adapter.namespace + '.' + idName, {
         type: "device",
@@ -243,17 +268,19 @@ async function addDevice(ip, name, enabled, mac){
         native: {
             enabled: enabled,
             ip: ip,
-            mac: mac
+            mac: mac,
+            vendor: vendor
         }
     })
 
     for (const obj in objects){
-        const objName = Object.keys(objects);
-
         await adapter.setObjectAsync(idName + '.' + obj, objects[obj]);
-
-
     }
+
+    clearTimeout(stopTimer);
+
+    const preparedObjects = await prepareObjectsByConfig();
+    pingAll(preparedObjects.pingTaskList, 0);
 }
 
 async function delDevice(deviceId) {
@@ -309,11 +336,10 @@ function pingAll(taskList, index) {
     });
 }
 
-
 function prepareObjectsForHost(config) {
     const host = config.ip;
     const mac = config.mac;
-    const idName = mac.replace(FORBIDDEN_CHARS, '_').replace(/:/g, '');
+    const idName = mac ? mac.replace(FORBIDDEN_CHARS, '_').replace(/:/g, '') : config.name;
 
     const stateAliveID = {channel: idName, state: 'alive'};
     const stateTimeID = {channel: idName, state: 'time'};
@@ -371,11 +397,6 @@ function extendHostInformation(){
 
 async function main(adapter) {
     extendHostInformation();
-
-    /*if (!adapter.config.devices.length) {
-        adapter.log.warn('No one host configured for ping');
-        discover();
-    }*/
 
     adapter.config.interval = parseInt(adapter.config.interval, 10);
 

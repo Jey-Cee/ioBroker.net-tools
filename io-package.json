@@ -3,7 +3,9 @@
         "name": "net-tools",
         "version": "0.1.0",
         "news": {
-            "0.1.0": {}
+            "0.1.0": {
+                "en": "initial release"
+            }
         },
         "title": "Net tools",
         "desc": {
@@ -26,10 +28,8 @@
         "mode": "daemon",
         "compact": true,
         "availableModes": [
-            "daemon",
-            "schedule"
+            "daemon"
         ],
-        "schedule": "*/1 * * * *",
         "readme": "https://github.com/jey-cee/ioBroker.net-tools/blob/master/README.md",
         "loglevel": "info",
         "icon": "net-tools.png",
@@ -45,8 +45,8 @@
         "materialize": true,
         "messagebox": true,
         "dependencies": {
-            "js-controller": ">=1.2.0",
-            "discovery": ">=2.3.10"
+            "js-controller": ">=3.1.6",
+            "discovery": ">=2.3.7"
         }
     },
     "native": {

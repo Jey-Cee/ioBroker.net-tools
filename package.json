@@ -38,6 +38,7 @@
     "@iobroker/adapter-core": "^2.3.0",
     "wol": "^1.0.7",
     "node-arp": "^1.0.6",
-    "evilscan": "^1.7.5"
+    "evilscan": "^1.7.5",
+    "oui": "^11.0.32"
   }
 }

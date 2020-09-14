@@ -103,23 +103,10 @@
                 return;
             }
 
-            for (let key in settings) {
-                if (!settings.hasOwnProperty(key)) {
-                    continue;
-                }
-                let $value = $('#' + key + '.value');
-                if ($value.attr('type') === 'checkbox') {
-                    $value.prop('checked', settings[key]).on('change', function() {
-                        onChange();
-                    });
-                } else {
-                    $value.val(settings[key]).on('change', function() {
-                        onChange();
-                    }).keyup(function() {
-                        onChange();
-                    });
-                }
-            }
+            let $value = $('#interval.value');
+            $value.val(settings['interval']).on('change', function() {
+                onChange();
+            });
 
             onChange(false);
 
@@ -139,6 +126,7 @@
             });
             // Get edited table
             //obj.devices = table2values('devices');
+            sendTo('net-tools.' + instance, 'updateDevice', table2values('devices')); //TODO: funktion in main.js einbauen für device update
 
             callback(obj);
         }
@@ -183,7 +171,7 @@
         </div>
         </div>
         <div class="modal-footer">
-            <button class="btn waves-effect waves-light modal-close modal-action translate" type="submit" name="action" id="addDeviceSubmit">add Device
+            <button class="btn waves-effect waves-light modal-close modal-action translate" type="submit" name="action" id="addDeviceSubmit">Add Device
                 <i class="material-icons right">send</i>
             </button>
             <button class="btn waves-effect waves-light modal-close modal-action translate" href="#!">close</button>

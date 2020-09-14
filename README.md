@@ -12,25 +12,57 @@
 Set discover object to true to discover devices on your network, this process takes while. 
 This feature is provided by discovery adapter, which means discovery will be installed if is not and it has to run.
 
+Remark: This feature is limited to the subnet of the ioBroker host.
+
 ### Pings configured IP addresses
 
-Pings specified IP addresses in defined interval and monitors the results.
+Pings specified IP addresses in defined interval and monitors the results. (alive, rps, time)
 
 ### Wake-on-LAN
 
-Set the wol object true and a wol package is sent to your device.
+Set the wol object to true and 3 WOL packages are sent, with a pasue of 750ms, to your device. 
+
 
 ### Port scan
 
 Set scan to true, this will scan for all open ports in a range of 0-65535. This process takes a while. 
 The result will be written to object ports.
 
+---
+
+## For Developers
+
+#### Get mac for specific device
+
+`sendToAsync('net-tools.X, 'getMac', 'IP ADDRESS')`
+
+Remark: This feature is limited to the subnet of the ioBroker host.
+
+#### Ping specific IP address
+
+`sendToAsync('net-tools.X, 'ping', 'IP ADDRESS')`
+
+#### Wake-on-LAN
+
+`sendToAsync('net-tools.x', 'wake', 'MAC ADDRESS')`
+
+---
+
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
+
+## [Sponsors](https://github.com/iobroker-community-adapters/ioBroker.net-tools/blob/master/SPONSORS.MD)
+If you like my work, please feel free to provide a personal donation  
+(this is an personal Donate link for Jey Cee, no relation to the ioBroker Project !)  
+[![Donate](https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.wled/master/admin/button.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=95YZN2LR59Q64&source=url)
+
+##### Join the Discord server to discuss everything about net-tools integration!
+
+<a href="https://discord.gg/33w6jUh"><img src="https://discordapp.com/api/guilds/743167951875604501/widget.png?style=banner2" width="25%"></a>
 
 ## Changelog
 
 ### 0.1.0 
-* (Jey Cee) initial release
+* initial release
 
 
 ## License
