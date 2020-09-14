@@ -250,12 +250,16 @@ async function addDevice(ip, name, enabled, mac){
         } else {
             idName = mac.replace(/:/g, '');
             vendor = oui(mac);
-            vendor = vendor.replace(/\n/g, ', ');
+            if (vendor) {
+                vendor = vendor.replace(/\n/g, ', ');
+            }
         }
     } else {
         idName = mac.replace(/:/g, '');
         vendor = oui(mac);
-        vendor = vendor.replace(/\n/g, ', ');
+        if (vendor){
+            vendor = vendor.replace(/\n/g, ', ');
+        }
     }
 
 
