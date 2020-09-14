@@ -388,7 +388,10 @@ async function prepareObjectsByConfig() {
 }
 
 function extendHostInformation(){
-   portScan('localhost', '127.0.0.1');
+    if (adapter.config.portScan === true){
+        portScan('localhost', '127.0.0.1');
+    }
+
 
     adapter.extendObject('localhost', {
         common: {

@@ -182,5 +182,17 @@ systemDictionary = {
         "es": "Agrega un nuevo dispositivo",
         "pl": "Dodaj nowe urządzenie",
         "zh-cn": "添加新设备"
+    },
+    "Enable initial port scan": {
+        "en": "Enable initial port scan for localhost",
+        "de": "Port-Scan beim Adapter start für localhost",
+        "ru": "Включить начальное сканирование портов для localhost",
+        "pt": "Habilitar varredura de porta inicial para localhost",
+        "nl": "Schakel de eerste poortscan in voor localhost",
+        "fr": "Activer l'analyse de port initiale pour l'hôte local",
+        "it": "Abilita la scansione della porta iniziale per localhost",
+        "es": "Habilitar el escaneo de puertos inicial para localhost",
+        "pl": "Włącz początkowe skanowanie portów dla hosta lokalnego",
+        "zh-cn": "为本地主机启用初始端口扫描"
     }
 };

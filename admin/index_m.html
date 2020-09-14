@@ -104,6 +104,11 @@
                 onChange();
             });
 
+
+                $('#portScan').prop('checked', settings['portScan'])
+                    .on('change', () => onChange())
+
+
             onChange(false);
 
             getDevices();
@@ -115,9 +120,11 @@
         function save(callback) {
             let obj = {};
             $('.value').each(function () {
-                var $this = $(this);
+                let $this = $(this);
                 if ($this.attr('id') === 'interval') {
                     obj[$this.attr('id')] = $this.val();
+                } else if ($this.attr('id') === 'portScan') {
+                        obj[$this.attr('id')] = $this.prop('checked');
                 }
             });
             // Get edited table
@@ -191,6 +198,12 @@
                 <div class="col s12 m4">
                     <input class="value" id="interval" type="number"  min="5000" max="1000000"/>
                     <label class="translate" for="interval">Interval[ms]:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s3">
+                    <input class="value filled-in" id="portScan" type="checkbox">
+                    <span class="translate">Enable initial port scan</span>
                 </div>
             </div>
         </div>
