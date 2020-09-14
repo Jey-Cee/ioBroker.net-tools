@@ -8,6 +8,18 @@
             }
         },
         "title": "Net tools",
+        "titleLang": {
+            "en": "Net tools",
+            "de": "Net Tools",
+            "ru": "Сетевые инструменты",
+            "pt": "Ferramentas de rede",
+            "nl": "Net tools",
+            "fr": "Outils nets",
+            "it": "Strumenti di rete",
+            "es": "Herramientas de red",
+            "pl": "Narzędzia sieciowe",
+            "zh-cn": "网络工具"
+        },
         "desc": {
             "en": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
             "de": "Dieser Adapter fragt zyklisch konfigurierte IPs ab, kann Wake-on-LAN-Pakete senden und nach offenen Ports suchen.",

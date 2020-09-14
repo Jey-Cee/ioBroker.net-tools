@@ -1,25 +1,33 @@
-const expect = require('chai').expect;
-const setup  = require('./lib/setup');
+/* jshint -W097 */// jshint strict:false
+/*jslint node: true */
+var expect = require('chai').expect;
+var setup  = require(__dirname + '/lib/setup');
 
-let objects = null;
-let states  = null;
-let onStateChanged = null;
-const onObjectChanged = null;
-const hostname = require('os').hostname();
+var objects = null;
+var states  = null;
+var onStateChanged = null;
+var onObjectChanged = null;
+var sendToID = 1;
+
+var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.') + 1);
+var runningMode = require(__dirname + '/../io-package.json').common.mode;
 
 function checkConnectionOfAdapter(cb, counter) {
     counter = counter || 0;
-    if (counter > 20) {
-        cb && cb('Cannot check connection');
+    console.log('Try check #' + counter);
+    if (counter > 30) {
+        if (cb) cb('Cannot check connection');
         return;
     }
 
-    states.getState('system.adapter.ping.0.alive', (err, state) => {
+    states.getState('system.adapter.' + adapterShortName + '.0.alive', function (err, state) {
         if (err) console.error(err);
         if (state && state.val) {
-            cb && cb();
+            if (cb) cb();
         } else {
-            setTimeout(() => checkConnectionOfAdapter(cb, counter + 1), 1000);
+            setTimeout(function () {
+                checkConnectionOfAdapter(cb, counter + 1);
+            }, 1000);
         }
     });
 }
@@ -27,169 +35,106 @@ function checkConnectionOfAdapter(cb, counter) {
 function checkValueOfState(id, value, cb, counter) {
     counter = counter || 0;
     if (counter > 20) {
-        cb && cb('Cannot check value Of State ' + id);
+        if (cb) cb('Cannot check value Of State ' + id);
         return;
     }
 
-    states.getState(id, (err, state) => {
+    states.getState(id, function (err, state) {
         if (err) console.error(err);
         if (value === null && !state) {
-            cb && cb();
+            if (cb) cb();
         } else
         if (state && (value === undefined || state.val === value)) {
-            cb && cb();
+            if (cb) cb();
         } else {
-            setTimeout(() => checkValueOfState(id, value, cb, counter + 1), 500);
+            setTimeout(function () {
+                checkValueOfState(id, value, cb, counter + 1);
+            }, 500);
         }
     });
 }
 
-describe('Test PING', function () {
-    before('Test PING: Start js-controller', function (_done) {
+function sendTo(target, command, message, callback) {
+    onStateChanged = function (id, state) {
+        if (id === 'messagebox.system.adapter.test.0') {
+            callback(state.message);
+        }
+    };
+
+    states.pushMessage('system.adapter.' + target, {
+        command:    command,
+        message:    message,
+        from:       'system.adapter.test.0',
+        callback: {
+            message: message,
+            id:      sendToID++,
+            ack:     false,
+            time:    (new Date()).getTime()
+        }
+    });
+}
+
+describe('Test ' + adapterShortName + ' adapter', function() {
+    before('Test ' + adapterShortName + ' adapter: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
 
-        setup.setupController(() => {
-            const config = setup.getAdapterConfig();
+        setup.setupController(function () {
+            var config = setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
 
-            config.native.devices = [
-                {
-                    name: 'localhost',
-                    ip:   '127.0.0.1',
-                    room: ''
-                },
-                {
-                    name: 'google',
-                    ip:   'google.com',
-                    room: ''
-                },
-                {
-                    name: 'not exists',
-                    ip:   '192.168.168.168',
-                    room: ''
-                }
-            ];
+            //config.native.dbtype   = 'sqlite';
 
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(
-                true,
-                (id, obj) => onObjectChanged && onObjectChanged(id, obj),
-                (id, state) => onStateChanged && onStateChanged(id, state),
-            (_objects, _states) => {
-                objects = _objects;
-                states  = _states;
-                states.subscribe('*');
-                _done();
-            });
+            setup.startController(true, function(id, obj) {}, function (id, state) {
+                    if (onStateChanged) onStateChanged(id, state);
+                },
+                function (_objects, _states) {
+                    objects = _objects;
+                    states  = _states;
+                    _done();
+                });
         });
     });
 
-    it('Test PING: Check if adapter started', done => {
-        checkConnectionOfAdapter(done);
-    }).timeout(5000);
-
-    it('Test PING: check creation of state', done => {
-        setTimeout(() => {
-            // if object exists
-            objects.getObject('ping.0.' + hostname + '.192_168_168_168', (err, obj) => {
-                expect(err).to.be.not.ok;
-                expect(obj).to.be.ok;
-                objects.getObject('ping.0.' + hostname + '.google_com', (err, obj) => {
-                    expect(err).to.be.not.ok;
-                    expect(obj).to.be.ok;
-                    objects.getObject('ping.0.' + hostname + '.127_0_0_1', (err, obj) => {
-                        expect(err).to.be.not.ok;
-                        expect(obj).to.be.ok;
-                        setTimeout(done, 5000);
-                    });
-                });
-            });
-        }, 10000);
-    }).timeout(20000);
-
-    it('Test PING: if localhost alive', done => {
-        const sID = 'ping.0.' + hostname + '.127_0_0_1';
-
-        states.getState(sID, (err, state) => {
-            expect(err).to.be.not.ok;
-            if (!state || !state.ack) {
-                onStateChanged = function (id, state) {
-                    console.log(id + ': ' + JSON.stringify(state));
-                    if (id === sID) {
-                        onStateChanged = null;
-                        expect(state.val).to.be.true;
-                        done();
-                    }
-                };
-            } else {
-                console.log(sID + ': ' + JSON.stringify(state));
-                expect(state.val).to.be.true;
-                done();
-            }
-        });
-    }).timeout(8000);
-
-    it('Test PING: if google alive', done => {
-        const sID = 'ping.0.' + hostname + '.google_com';
-
-        if (!((process.env.APPVEYOR && process.env.APPVEYOR === 'True') || (process.env.TRAVIS && process.env.TRAVIS === 'true'))) {
+    it('Test ' + adapterShortName + ' instance object: it must exists', function (done) {
+        objects.getObject('system.adapter.' + adapterShortName + '.0', function (err, obj) {
+            expect(err).to.be.null;
+            expect(obj).to.be.an('object');
+            expect(obj).not.to.be.null;
             done();
-            return;
-        }
-
-        states.getState(sID, (err, state) => {
-            expect(err).to.be.not.ok;
-            if (!state || !state.ack) {
-                onStateChanged = function (id, state) {
-                    console.log(id + ': ' + JSON.stringify(state));
-                    if (id === sID) {
-                        onStateChanged = null;
-                        expect(state.val).to.be.true;
-                        done();
-                    }
-                };
-            } else {
-                console.log(sID + ': ' + JSON.stringify(state));
-                expect(state.val).to.be.true;
-                done();
-            }
         });
-    }).timeout(1000);
+    });
 
-    it('Test PING: if not_exist not alive', done => {
-        const sID = 'ping.0.' + hostname + '.192_168_168_168';
-
-        if (!((process.env.APPVEYOR && process.env.APPVEYOR === 'True') || (process.env.TRAVIS && process.env.TRAVIS === 'true'))) {
+    it('Test ' + adapterShortName + ' adapter: Check if adapter started', function (done) {
+        this.timeout(60000);
+        checkConnectionOfAdapter(function (res) {
+            if (res) console.log(res);
+            if (runningMode === 'daemon') {
+                expect(res).not.to.be.equal('Cannot check connection');
+            } else {
+                //??
+            }
             done();
-            return;
-        }
-
-        states.getState(sID, (err, state) => {
-            expect(err).to.be.not.ok;
-            if (!state || !state.ack) {
-                onStateChanged = function (id, state) {
-                    console.log(id + ': ' + JSON.stringify(state));
-                    if (id === sID) {
-                        onStateChanged = null;
-                        expect(state.val).to.be.false;
-                        done();
-                    }
-                };
-            } else {
-                console.log(sID + ': ' + JSON.stringify(state));
-                expect(state.val).to.be.false;
-                done();
-            }
         });
-    }).timeout(3000);
+    });
+    /**/
 
-    after('Test PING: Stop js-controller', function (done) {
-        this.timeout(6000);
+    /*
+        PUT YOUR OWN TESTS HERE USING
+        it('Testname', function ( done) {
+            ...
+        });
 
-        setup.stopController(normalTerminated => {
+        You can also use "sendTo" method to send messages to the started adapter
+    */
+
+    after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
+        this.timeout(10000);
+
+        setup.stopController(function (normalTerminated) {
             console.log('Adapter normal terminated: ' + normalTerminated);
             done();
         });
