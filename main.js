@@ -1,12 +1,3 @@
-/**
- *
- *      ioBroker PING Adapter
- *
- *      (c) 2014-2020 bluefox<dogafox@gmail.com>
- *
- *      MIT License
- *
- */
 /* jshint -W097 */
 /* jshint strict: false */
 /* jslint node: true */
@@ -137,38 +128,44 @@ async function handleStateChange(id, state) {
  * @param {string} ip - ip address like 127.0.0.1
  */
 async function portScan(id, ip){
-    adapter.log.info(`Scanning for open ports at ${id}, please wait`);
-    await adapter.setStateAsync(id + '.ports', 'Scanning, please wait')
-    let openPorts = [];
-    let options = {
-        target: ip,
-        port:'0-65535',
-        status:'O', // Timeout, Refused, Open, Unreachable
-        banner: false,
-        reverse: false
-    };
+    const alive = await adapter.getStateAsync(id + '.alive');
+    if (alive.val === true) {
+        adapter.log.info(`Scanning for open ports at ${id}, please wait`);
+        await adapter.setStateAsync(id + '.ports', 'Scanning, please wait')
+        let openPorts = [];
+        let options = {
+            target: ip,
+            port: '0-65535',
+            status: 'O', // Timeout, Refused, Open, Unreachable
+            banner: false,
+            reverse: false
+        };
 
-    let scanner = new portscanner(options);
+        let scanner = new portscanner(options);
 
-    scanner.on('result',function(data) {
-        // fired when item is matching options
-        if(data.status !== 'closed (refused)'){
-            openPorts.push(JSON.stringify(data.port));
-        }
+        scanner.on('result', function (data) {
+            // fired when item is matching options
+            if (data.status !== 'closed (refused)') {
+                openPorts.push(JSON.stringify(data.port));
+            }
 
-    });
+        });
 
-    scanner.on('error',function(err) {
-        throw new Error(err.toString());
-    });
+        scanner.on('error', function (err) {
+            adapter.log.error(err.toString());
+        });
 
-    scanner.on('done',function() {
-        // finished !
-        adapter.setState(id + '.ports', openPorts);
-        adapter.log.info('Port scan finished');
-    });
+        scanner.on('done', function () {
+            // finished !
+            adapter.setState(id + '.ports', openPorts);
+            adapter.log.info('Port scan finished');
+        });
 
-    scanner.run();
+        scanner.run();
+    } else {
+        await adapter.setStateAsync(id + '.ports', `Port scan aborted, device ${id} is not alive`)
+        adapter.log.info(`Port scan aborted, device ${id} is not alive`);
+    }
 }
 
 async function getParentId(id){
@@ -198,43 +195,56 @@ function wake(mac){
 async function discover(){
     let oldDevices = await adapter.getDevicesAsync();
 
-    let result = await adapter.sendToAsync('discovery.0', 'browse', ['ping']).catch(error => {adapter.log.warn('Discovery faild: ' + error)});
+    try {
+        let result = await adapter.sendToAsync('discovery.0', 'browse', ['ping']);
 
-    for(const device of result.devices){
-        if(device._addr !== '127.0.0.1' && device._addr !== '0.0.0.0'){
-            const mac = await getMac(device._addr);
-            const vendor = oui(mac);
-            let exists = false;
+        for (const device of result.devices) {
+            if (device._addr !== '127.0.0.1' && device._addr !== '0.0.0.0') {
+                const mac = await getMac(device._addr);
+                const vendor = oui(mac);
+                let exists = false;
 
-            for(const entry of oldDevices){
-                if(entry.native !== undefined && entry.native.mac === device.mac){
-                    exists = true;
+                for (const entry of oldDevices) {
+                    if (entry.native !== undefined && entry.native.mac === device.mac) {
+                        exists = true;
+                    }
+                    if (exists === true && entry.native !== undefined && entry.native.ip !== device._addr) {
+                        const idName = mac.replace(/:/g, '');
+                        await adapter.extendObjectAsync(adapter.namespace + '.' + idName, {
+                            native: {
+                                ip: device._addr,
+                                vendor: vendor
+                            }
+                        })
+                    }
                 }
-                if(exists === true && entry.native !== undefined && entry.native.ip !== device._addr){
-                    const idName = mac.replace(/:/g, '');
-                    await adapter.extendObjectAsync(adapter.namespace + '.' + idName, {
-                        native: {
-                            ip: device._addr,
-                            vendor: vendor
-                        }
-                    })
+
+                if (!exists) {
+                    await addDevice(device._addr, device._name, true, mac);
                 }
+
+
             }
-
-            if(!exists){
-                await addDevice(device._addr, device._name, true, mac);
-            }
-
-
         }
+        const preparedObjects = await prepareObjectsByConfig();
+        pingAll(preparedObjects.pingTaskList, 0);
+    } catch (err) {
+        adapter.log.warn('Discovery faild: ' + error);
     }
-    const preparedObjects = await prepareObjectsByConfig();
-    pingAll(preparedObjects.pingTaskList, 0);
 }
 
 function getMac(ip){
     return new Promise(resolve => {
-        arp.getMAC(ip, (err, mac) => resolve(mac))
+        arp.getMAC(ip, (err, mac) => {
+            if(err){
+                adapter.log.error(err);
+                resolve(undefined);
+            } else {
+                resolve(mac);
+            }
+
+
+        });
     })
 }
 
@@ -391,15 +401,6 @@ function extendHostInformation(){
     if (adapter.config.portScan === true){
         portScan('localhost', '127.0.0.1');
     }
-
-
-    adapter.extendObject('localhost', {
-        common: {
-            name: adapter.ip
-        }
-    })
-
-
 }
 
 async function main(adapter) {
