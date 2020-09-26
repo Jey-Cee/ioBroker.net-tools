@@ -129,7 +129,7 @@ async function handleStateChange(id, state) {
  */
 async function portScan(id, ip){
     const alive = await adapter.getStateAsync(id + '.alive');
-    if (alive.val === true) {
+    if (id === 'localhost' || alive.val === true) {
         adapter.log.info(`Scanning for open ports at ${id}, please wait`);
         await adapter.setStateAsync(id + '.ports', 'Scanning, please wait')
         let openPorts = [];
