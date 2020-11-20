@@ -404,6 +404,7 @@ function extendHostInformation(){
 }
 
 async function main(adapter) {
+    //TODO: check on startup if IP addresses has changed. Look on the MAC list?
     extendHostInformation();
 
     adapter.config.interval = parseInt(adapter.config.interval, 10);
