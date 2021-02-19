@@ -13,7 +13,43 @@
     <script type="text/javascript" src="../../js/translate.js"></script>
     <script type="text/javascript" src="../../lib/js/materialize.js"></script>
     <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+    <script type="text/javascript" src="../../lib/js/showdown.min.js"></script>
     <script type="text/javascript" src="words.js"></script>
+
+    <style>
+        /* START Sponsors Tab */
+        #sponsors-body {
+            margin-top: 15px!important;
+            padding-bottom: 25px!important;
+            background-color: white!important;
+        }
+        #sponsors-body > h2 {
+            text-align: center;
+            font-size: 2rem;
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-bottom-color: black;
+        }
+
+        h4 {
+            background-color: rgba(0,0,0,.0)!important;
+        }
+
+        #sponsors-body > h4 {
+            margin-bottom: 0px!important;
+        }
+
+        #sponsors-body > p {
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        #sponsors-body > table {
+            margin-bottom: 3rem!important;
+        }
+
+        /* END Sponsors Tab */
+    </style>
 
     <script type="text/javascript">
         let _onChange = null;
@@ -33,6 +69,13 @@
                     getDevices();
                 })
             });
+
+            $('#discoverDevices').on('click', () => {
+                socket.emit('setState', `net-tools.${instance}.discover`, true);
+                setInterval( () => {
+                    getDevices();
+                }, 1000)
+            })
         });
 
         function ip2number(addr) {
@@ -92,6 +135,26 @@
             });
         }
 
+        function sponsorsList(){
+            let request = new XMLHttpRequest();
+            request.open('GET', 'https://raw.githubusercontent.com/Jey-Cee/ioBroker.net-tools/master/SPONSORS.md', true);
+            request.send(null);
+            request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                    let type = request.getResponseHeader('Content-Type');
+                    if (type.indexOf("text") !== 1) {
+                        let response = request.responseText;
+                        response = response.replace('# Sponsors', '');
+                        let html = new showdown.Converter().makeHtml(response);
+                        html = html.replace('<a href="https://paypal.me/J3YC33" rel="nofollow">https://paypal.me/J3YC33</a>', '<a href="https://www.paypal.com/paypalme/J3YC33" target="_blank">PayPal</a>');
+                        $('#sponsors-body').html(html);
+                    }
+                }
+            }
+
+
+        }
+
         // the function loadSettings has to exist ...
         function load(settings, onChange) {
             _onChange = onChange;
@@ -112,6 +175,7 @@
             onChange(false);
 
             getDevices();
+            sponsorsList();
 
             // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
             if (M) M.updateTextFields();
@@ -181,11 +245,28 @@
         </div>
     </div>
 
+    <div id="discover-devices" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4 class="blue lighten-1 white-text translate" style="width:100%;">Searching...</h4>
+            <div class="section">
+                <div class="row">
+                    <div class="col s6 offset-s3">
+                        <span class="translate" style="font-size:16px;">Please Standby</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn waves-effect waves-light modal-close modal-action translate" href="#!">close</button>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col s12">
             <ul class="tabs">
                 <li class="tab col s2"><a href="#tab-main"    class="translate active">Main settings</a></li>
                 <li class="tab col s2"><a href="#tab-devices" class="translate">Devices</a></li>
+                <li class="tab col s2"><a href="#tab-sponsors"  class="translate active">Sponsors</a></li>
             </ul>
         </div>
         <div id="tab-main" class="col s12 page">
@@ -212,6 +293,9 @@
                 <div class="input-field col s2">
                     <a data-operation="addDevice" data-icon="add" class="waves-effect waves-light btn modal-trigger translate" href="#add-device">Add Device</a>
                 </div>
+                <div class="input-field col s2">
+                    <a id="discoverDevices" data-icon="add" class="waves-effect waves-light btn modal-trigger translate" href="#discover-devices">Discover devices</a>
+                </div>
             </div>
             <div class="row">
                 <div id="devices" class="table-values-div">
@@ -227,6 +311,14 @@
                         </tr>
                         </thead>
                     </table>
+                </div>
+            </div>
+        </div>
+        <!-- Sponsors Tab -->
+        <div id="tab-sponsors" class="col s12 page">
+            <div class="row">
+                <div id="sponsors-body" class="col s12">
+
                 </div>
             </div>
         </div>

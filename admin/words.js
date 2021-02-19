@@ -194,5 +194,41 @@ systemDictionary = {
         "es": "Habilitar el escaneo de puertos inicial para localhost",
         "pl": "Włącz początkowe skanowanie portów dla hosta lokalnego",
         "zh-cn": "为本地主机启用初始端口扫描"
+    },
+    "Searching...": {
+        "en": "Searching...",
+        "de": "Suche...",
+        "ru": "Ищем ...",
+        "pt": "Procurando...",
+        "nl": "Zoeken...",
+        "fr": "Recherche...",
+        "it": "Ricerca in corso ...",
+        "es": "Buscando...",
+        "pl": "Badawczy...",
+        "zh-cn": "正在搜寻..."
+    },
+    "Please Standby": {
+        "en": "This process can take a while (1 minute or more), pleas be patient. <br>The devices list updates automatically. <br><br> You can close this window and also the configuration page, while the process is going on.",
+        "de": "Dieser Vorgang kann eine Weile dauern (1 Minute oder länger). Bitte haben Sie etwas Geduld. <br>Die Geräteliste aktualisiert sich automatisch. <br><br> Sie können dieses Fenster und auch die Konfigurationsseite schließen, während der Vorgang ausgeführt wird.",
+        "ru": "Этот процесс может занять некоторое время (1 минуту или больше), наберитесь терпения. <br>Список устройств обновляется автоматически. <br><br> Вы можете закрыть это окно, а также страницу конфигурации, пока процесс продолжается.",
+        "pt": "Este processo pode demorar um pouco (1 minuto ou mais), por favor, seja paciente. <br>A lista de dispositivos é atualizada automaticamente. <br><br> Você pode fechar esta janela e também a página de configuração, enquanto o processo está em andamento.",
+        "nl": "Dit proces kan even duren (1 minuut of langer), wees geduldig. <br>De apparatenlijst wordt automatisch bijgewerkt. <br><br> U kunt dit venster en ook de configuratiepagina sluiten terwijl het proces gaande is.",
+        "fr": "Ce processus peut prendre un certain temps (1 minute ou plus), soyez patient. <br>La liste des appareils est mise à jour automatiquement. <br><br> Vous pouvez fermer cette fenêtre ainsi que la page de configuration, pendant que le processus est en cours.",
+        "it": "Questo processo può richiedere del tempo (1 minuto o più), sii paziente. <br>L'elenco dei dispositivi si aggiorna automaticamente. <br><br> È possibile chiudere questa finestra e anche la pagina di configurazione, mentre il processo è in corso.",
+        "es": "Este proceso puede llevar un tiempo (1 minuto o más), tenga paciencia. <br>La lista de dispositivos se actualiza automáticamente. <br><br> Puede cerrar esta ventana y también la página de configuración, mientras el proceso continúa.",
+        "pl": "Ten proces może chwilę potrwać (1 minutę lub dłużej), prosimy o cierpliwość. <br>Lista urządzeń aktualizuje się automatycznie. <br><br> Możesz zamknąć to okno, a także stronę konfiguracji, w trakcie procesu.",
+        "zh-cn": "此过程可能需要一段时间（1分钟或更长时间），请耐心等待。设备列表会自动更新。 <br><br>在此过程进行期间，您可以关闭此窗口以及配置页面。"
+    },
+    "Discover devices": {
+        "en": "Discover devices",
+        "de": "Geräte Suchen",
+        "ru": "Откройте для себя устройства",
+        "pt": "Descubra dispositivos",
+        "nl": "Ontdek apparaten",
+        "fr": "Découvrir les appareils",
+        "it": "Scopri i dispositivi",
+        "es": "Descubrir dispositivos",
+        "pl": "Odkryj urządzenia",
+        "zh-cn": "发现设备"
     }
 };

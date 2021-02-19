@@ -18,6 +18,7 @@ let stopTimer  = null;
 let isStopping = false;
 let wolTries = 3;
 let wolTimer = null;
+let discoverTimeout = null;
 
 const FORBIDDEN_CHARS = /[\]\[*,;'"`<>\\?]/g;
 
@@ -45,6 +46,10 @@ function startAdapter(options) {
         if (wolTimer) {
             clearTimeout(wolTimer);
             wolTimer = null;
+        }
+        if (discoverTimeout) {
+            clearTimeout(discoverTimeout);
+            discoverTimeout = null;
         }
         isStopping = true;
     });
@@ -194,10 +199,27 @@ function wake(mac){
 
 async function discover(){
     let oldDevices = await adapter.getDevicesAsync();
+    let discovery = await adapter.getForeignStateAsync('system.adapter.discovery.0.alive');
+    let discoveryEnabled = true;
 
+    if(!discovery.val){
+        discoveryEnabled = false;
+        await adapter.extendForeignObjectAsync('system.adapter.discovery.0', {
+            common: {
+                enabled: true
+            }
+        })
+    }
+    discoverTimeout = setTimeout( async() => {
     try {
         let result = await adapter.sendToAsync('discovery.0', 'browse', ['ping']);
-
+        if(!discoveryEnabled){
+            await adapter.extendForeignObjectAsync('system.adapter.discovery.0', {
+                common: {
+                    enabled: false
+                }
+            })
+        }
         for (const device of result.devices) {
             if (device._addr !== '127.0.0.1' && device._addr !== '0.0.0.0') {
                 const mac = await getMac(device._addr);
@@ -229,8 +251,9 @@ async function discover(){
         const preparedObjects = await prepareObjectsByConfig();
         pingAll(preparedObjects.pingTaskList, 0);
     } catch (err) {
-        adapter.log.warn('Discovery faild: ' + error);
+        adapter.log.warn('Discovery faild: ' + err);
     }
+    }, 1000)
 }
 
 function getMac(ip){
@@ -274,7 +297,7 @@ async function addDevice(ip, name, enabled, mac){
 
 
 
-    await adapter.setObjectAsync(adapter.namespace + '.' + idName, {
+    await adapter.extendObjectAsync(adapter.namespace + '.' + idName, {
         type: "device",
         common: {
             name: name || ip
@@ -288,7 +311,7 @@ async function addDevice(ip, name, enabled, mac){
     })
 
     for (const obj in objects){
-        await adapter.setObjectAsync(idName + '.' + obj, objects[obj]);
+        await adapter.extendObjectAsync(idName + '.' + obj, objects[obj]);
     }
 
     clearTimeout(stopTimer);
