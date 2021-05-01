@@ -168,7 +168,7 @@ async function portScan(id, ip){
 
         scanner.run();
     } else {
-        await adapter.setStateAsync(id + '.ports', `Port scan aborted, device ${id} is not alive`)
+        await adapter.setStateAsync(id + '.ports', {val: `Port scan aborted, device ${id} is not alive`, ack: true})
         adapter.log.info(`Port scan aborted, device ${id} is not alive`);
     }
 }
