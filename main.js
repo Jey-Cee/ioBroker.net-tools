@@ -136,7 +136,7 @@ async function portScan(id, ip){
     const alive = await adapter.getStateAsync(id + '.alive');
     if (id === 'localhost' || alive.val === true) {
         adapter.log.info(`Scanning for open ports at ${id}, please wait`);
-        await adapter.setStateAsync(id + '.ports', 'Scanning, please wait')
+        await adapter.setStateAsync(id + '.ports', {val: 'Scanning, please wait', ack: true})
         let openPorts = [];
         let options = {
             target: ip,
@@ -162,7 +162,7 @@ async function portScan(id, ip){
 
         scanner.on('done', function () {
             // finished !
-            adapter.setState(id + '.ports', openPorts);
+            adapter.setState(id + '.ports', {val: openPorts, ack: true});
             adapter.log.info('Port scan finished');
         });
 

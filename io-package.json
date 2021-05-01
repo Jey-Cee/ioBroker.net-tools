@@ -61,10 +61,10 @@
         "messagebox": true,
         "connectionType": "local",
         "dataSource": "poll",
-        "dependencies": {
+        "dependencies": [{
             "js-controller": ">=3.1.6",
             "discovery": ">=2.3.7"
-        }
+        }]
     },
     "native": {
         "interval": 60000,
