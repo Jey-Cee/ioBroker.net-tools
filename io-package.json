@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "news": {
+            "0.1.3": {
+                "en": "Fixes for js-controller 3.3"
+            },
             "0.1.2": {
                 "en": "added device discovery to configuration page \n start discovery if it is not started and stop it afterwards"
             },

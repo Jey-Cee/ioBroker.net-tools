@@ -1,7 +1,7 @@
 {
   "name": "iobroker.net-tools",
   "description": "This adapter cyclic polls configured IPs.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": "Jey Cee <jey-cee@live.com>",
   "contributors": [
     "bluefox <dogafox@gmail.com>",
