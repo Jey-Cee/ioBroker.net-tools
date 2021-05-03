@@ -162,7 +162,7 @@ async function portScan(id, ip){
 
         scanner.on('done', function () {
             // finished !
-            adapter.setState(id + '.ports', {val: openPorts, ack: true});
+            adapter.setState(id + '.ports', {val: JSON.stringify(openPorts), ack: true});
             adapter.log.info('Port scan finished');
         });
 
