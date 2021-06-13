@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jey-cee/ioBroker.net-tools"
+    "url": "git+https://github.com/Jey-Cee/ioBroker.net-tools.git"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^1.4.1",

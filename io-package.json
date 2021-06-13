@@ -3,6 +3,9 @@
         "name": "net-tools",
         "version": "0.1.5",
         "news": {
+            "0.1.5": {
+                "en": "changes on testing"
+            },
             "0.1.4": {
                 "en": "Fixes for js-controller 3.3"
             },
