@@ -64,7 +64,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 
 ## Changelog
 
-### **WORK IN PROGRESS**
+### __WORK IN PROGRESS__
 * fix device settings in adapter configuration
 
 ### 0.1.5
