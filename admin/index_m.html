@@ -76,6 +76,7 @@
                     getDevices();
                 }, 1000)
             })
+
         });
 
         function ip2number(addr) {
@@ -193,7 +194,7 @@
             });
             // Get edited table
             //obj.devices = table2values('devices');
-            sendTo('net-tools.' + instance, 'updateDevice', table2values('devices')); //TODO: funktion in main.js einbauen für device update
+            sendTo('net-tools.' + instance, 'updateDevice', table2values('devices'));
 
             callback(obj);
         }

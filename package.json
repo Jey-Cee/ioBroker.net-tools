@@ -35,11 +35,11 @@
     "release": "release-script"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^2.3.0",
+    "@iobroker/adapter-core": "^2.5.1",
     "@iobroker/testing": "^2.4.4",
     "wol": "^1.0.7",
     "node-arp": "^1.0.6",
-    "evilscan": "^1.7.5",
-    "oui": "^11.0.32"
+    "evilscan": "^1.8.0",
+    "oui": "^11.0.77"
   }
 }

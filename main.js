@@ -96,6 +96,10 @@ async function processMessage(obj) {
                 })
             break;
         }
+        case 'updateDevice': {
+            await updateDevices(obj.message);
+            break;
+        }
     }
 }
 
@@ -276,6 +280,7 @@ async function addDevice(ip, name, enabled, mac){
 
     if (!mac) {
         mac = await getMac(ip);
+        mac = mac.toLowerCase();
 
         if (mac === '(unvollständig)' || mac === undefined) {
             adapter.log.info(`Could not find the mac address for ${ip}`);
@@ -321,7 +326,7 @@ async function addDevice(ip, name, enabled, mac){
 }
 
 async function delDevice(deviceId) {
-    await adapter.getObjectListAsync({startkey: 'ping.' + adapter.instance + '.' + deviceId, endkey: 'ping.' + adapter.instance + '.' + deviceId + '.\u9999'})
+    await adapter.getObjectListAsync({startkey: 'net-tools.' + adapter.instance + '.' + deviceId, endkey: 'net-tools.' + adapter.instance + '.' + deviceId + '.\u9999'})
         .then(async result => {
             for (const r in result.rows) {
                 await adapter.delObjectAsync(result.rows[r].id)
@@ -334,6 +339,30 @@ async function delDevice(deviceId) {
         }, reject => {
             console.log(reject);
         });
+}
+
+async function updateDevices(devices){
+    adapter.log.info(JSON.stringify(devices))
+   for(let i in devices){
+       let mac = devices[i].mac.replace(/:/g, '').toLowerCase();
+       const allDevices = await adapter.getDevicesAsync();
+       let deleted = true;
+       let deviceName;
+       for(let d in allDevices){
+           if(`${adapter.namespace}.${mac}` !== allDevices[d]._id){
+               deleted = true
+           } else {
+               deleted = false;
+               break;
+          }
+       }
+       if(deleted === true){
+           adapter.log.info(`Delete device ${mac}`);
+           await delDevice(mac);
+       } else {
+           await adapter.extendObjectAsync(`${adapter.namespace}.${mac}`, { native: devices[i] })
+       }
+   }
 }
 
 function pingAll(taskList, index) {
