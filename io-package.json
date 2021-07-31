@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "news": {
+            "0.1.7": {
+                "en": "fix device settings in adapter configuration",
+                "de": "Geräteeinstellungen in der Adapterkonfiguration korrigieren",
+                "ru": "исправить настройки устройства в конфигурации адаптера",
+                "pt": "corrigir as configurações do dispositivo na configuração do adaptador",
+                "nl": "apparaatinstellingen repareren in adapterconfiguratie",
+                "fr": "corriger les paramètres de l'appareil dans la configuration de l'adaptateur",
+                "it": "correggere le impostazioni del dispositivo nella configurazione dell'adattatore",
+                "es": "arreglar la configuración del dispositivo en la configuración del adaptador",
+                "pl": "popraw ustawienia urządzenia w konfiguracji adaptera",
+                "zh-cn": "修复适配器配置中的设备设置"
+            },
             "0.1.6": {
                 "en": "fix device settings in adapter configuration",
                 "de": "Geräteeinstellungen in der Adapterkonfiguration korrigieren",
