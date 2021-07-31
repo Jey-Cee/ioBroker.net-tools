@@ -21,7 +21,7 @@
     "url": "git+https://github.com/Jey-Cee/ioBroker.net-tools.git"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^1.4.1",
+    "@alcalzone/release-script": "^2.2.1",
     "gulp": "^4.0.2",
     "mocha": "^8.0.1",
     "chai": "^4.2.0"
