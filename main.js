@@ -360,7 +360,12 @@ async function updateDevices(devices){
            adapter.log.info(`Delete device ${mac}`);
            await delDevice(mac);
        } else {
-           await adapter.extendObjectAsync(`${adapter.namespace}.${mac}`, { native: devices[i] })
+           await adapter.extendObjectAsync(`${adapter.namespace}.${mac}`, {
+               common: {
+                   name: devices[i].name
+               },
+               native: devices[i]
+           })
        }
    }
 }
