@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "0.1.7",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "add feature to define ports they should be scanned\nfix crash if no MAC address can be found by the adapter",
+        "de": "Funktion hinzufügen, um Ports zu definieren, die gescannt werden sollen\nAbsturz behoben, wenn keine MAC-Adresse vom Adapter gefunden werden kann",
+        "ru": "добавить функцию для определения портов, которые они должны сканировать\nисправить сбой, если адаптер не может найти MAC-адрес",
+        "pt": "adicionar recurso para definir portas que devem ser verificadas\ncorrija a falha se nenhum endereço MAC puder ser encontrado pelo adaptador",
+        "nl": "functie toevoegen om poorten te definiëren die moeten worden gescand\ncrash repareren als de adapter geen MAC-adres kan vinden",
+        "fr": "ajouter une fonctionnalité pour définir les ports qu'ils doivent analyser\ncorrection d'un crash si aucune adresse MAC ne peut être trouvée par l'adaptateur",
+        "it": "aggiungi funzionalità per definire le porte da scansionare\ncorreggere l'arresto anomalo se non è possibile trovare un indirizzo MAC dall'adattatore",
+        "es": "agregue la función para definir los puertos que deben escanearse\ncorrige el bloqueo si el adaptador no puede encontrar una dirección MAC",
+        "pl": "dodaj funkcję, aby zdefiniować porty, które powinny być skanowane\nnapraw awarię, jeśli adapter nie może znaleźć adresu MAC",
+        "zh-cn": "添加功能以定义应扫描的端口\n如果适配器找不到 MAC 地址，则修复崩溃"
+      },
       "0.1.7": {
         "en": "fix device settings in adapter configuration",
         "de": "Geräteeinstellungen in der Adapterkonfiguration korrigieren",
