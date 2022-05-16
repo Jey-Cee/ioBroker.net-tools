@@ -20,8 +20,18 @@
     "type": "git",
     "url": "git+https://github.com/Jey-Cee/ioBroker.net-tools.git"
   },
+  "dependencies": {
+    "@iobroker/adapter-core": "2.6.0",
+    "wol": "1.0.7",
+    "node-arp": "1.0.6",
+    "evilscan": "1.9.1",
+    "oui": "12.0.5"
+  },
   "devDependencies": {
-    "@alcalzone/release-script": "^2.2.1",
+    "@alcalzone/release-script": "^3.5.9",
+    "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
+    "@alcalzone/release-script-plugin-license": "^3.5.9",
+    "@iobroker/testing": "^3.0.1",
     "gulp": "^4.0.2",
     "mocha": "^8.0.1",
     "chai": "^4.2.0"
@@ -33,13 +43,5 @@
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha --exit",
     "release": "release-script"
-  },
-  "dependencies": {
-    "@iobroker/adapter-core": "^2.5.1",
-    "@iobroker/testing": "^2.4.4",
-    "wol": "^1.0.7",
-    "node-arp": "^1.0.6",
-    "evilscan": "^1.8.0",
-    "oui": "^11.0.77"
   }
 }
