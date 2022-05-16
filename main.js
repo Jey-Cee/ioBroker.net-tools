@@ -124,7 +124,12 @@ async function handleStateChange(id, state) {
                 if (state.val) {
                     let parentId = await getParentId(id);
                     let obj = await adapter.getObjectAsync(parentId);
-                    portScan(parentId, obj.native.ip);
+                    let ports = await adapter.getStateAsync(`${id}.portList`);
+                    if (!ports) {
+                        ports = adapter.config.ports;
+                    }
+
+                    portScan(parentId, obj.native.ip, ports);
                 }
                 break;
         }
@@ -135,16 +140,17 @@ async function handleStateChange(id, state) {
  *
  * @param {string} id - object id for host
  * @param {string} ip - ip address like 127.0.0.1
+ * @param {string} ports - string of ports to scan e.g. '80,443,8080'
  */
-async function portScan(id, ip){
+async function portScan(id, ip, ports){
     const alive = await adapter.getStateAsync(id + '.alive');
     if (id === 'localhost' || alive.val === true) {
-        adapter.log.info(`Scanning for open ports at ${id}, please wait`);
+        adapter.log.info(`Scanning for open ports (${ports ? ports : '0-65535'}) at ${id}, please wait`);
         await adapter.setStateAsync(id + '.ports', {val: 'Scanning, please wait', ack: true})
         let openPorts = [];
         let options = {
             target: ip,
-            port: '0-65535',
+            port: ports ? ports : '0-65535',
             status: 'O', // Timeout, Refused, Open, Unreachable
             banner: false,
             reverse: false
@@ -280,6 +286,10 @@ async function addDevice(ip, name, enabled, mac){
 
     if (!mac) {
         mac = await getMac(ip);
+
+        if(!mac) {
+            return;
+        }
         mac = mac.toLowerCase();
 
         if (mac === '(unvollständig)' || mac === undefined) {
@@ -456,7 +466,8 @@ async function prepareObjectsByConfig() {
 
 function extendHostInformation(){
     if (adapter.config.portScan === true){
-        portScan('localhost', '127.0.0.1');
+        let ports = adapter.config.ports;
+        portScan('localhost', '127.0.0.1', ports);
     }
 }
 

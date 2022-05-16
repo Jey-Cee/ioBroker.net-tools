@@ -3,6 +3,18 @@
 'use strict';
 
 systemDictionary = {
+    "Scan ports:": {
+        "en": "List of ports to scan",
+        "de": "Liste der zu scannenden Ports",
+        "ru": "Список портов для сканирования",
+        "pt": "Lista de portas para escanear",
+        "nl": "Lijst van poorten om te scannen",
+        "fr": "Liste des ports à scanner",
+        "it": "Elenco dei porti da scansionare",
+        "es": "Lista de puertos a escanear",
+        "pl": "Lista portów do skanowania",
+        "zh-cn": "扫描端口列表"
+    },
     "PING adapter settings": {
         "en": "PING adapter settings",
         "de": "PING Adapter-Einstellungen",

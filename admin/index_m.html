@@ -168,10 +168,12 @@
                 onChange();
             });
 
+            $('#portScan').prop('checked', settings['portScan'])
+                .on('change', () => onChange());
 
-                $('#portScan').prop('checked', settings['portScan'])
-                    .on('change', () => onChange())
-
+            $('#ports').val(settings['ports']).on('change', function() {
+                onChange();
+            });
 
             onChange(false);
 
@@ -190,6 +192,8 @@
                     obj[$this.attr('id')] = $this.val();
                 } else if ($this.attr('id') === 'portScan') {
                         obj[$this.attr('id')] = $this.prop('checked');
+                } else if ($this.attr('id') === 'ports') {
+                    obj[$this.attr('id')] = $this.val();
                 }
             });
             // Get edited table
@@ -286,6 +290,12 @@
                 <div class="input-field col s3">
                     <input class="value filled-in" id="portScan" type="checkbox">
                     <span class="translate">Enable initial port scan</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m4">
+                    <input class="value" id="ports" type="text"/>
+                    <label class="translate" for="ports">Scan ports:</label>
                 </div>
             </div>
         </div>

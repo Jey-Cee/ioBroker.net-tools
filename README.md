@@ -26,6 +26,11 @@ This feature is provided by discovery adapter, which means discovery will be ins
 
 Remark: This feature is limited to the subnet of the ioBroker host.
 
+### Add manual devices
+
+If you add a device manually, you can leave the MAC empty, the adapter will try to obtain it.
+There is a 50% chance that this automatic lookup will fail and the devices can not be added. In this case you have to enter the MAC.
+
 ### Pings configured IP addresses
 
 Pings specified IP addresses in defined interval and monitors the results. (alive, rps, time)
@@ -37,7 +42,11 @@ Set the wol object to true and 3 WOL packages are sent, with a pause of 750ms, t
 
 ### Port scan
 
-Set scan to true, this will scan for all open ports in a range of 0-65535. This process takes a while. 
+You can enter a list of ports or an range in config that should be scanned by default. If this field is empty the range 0-65535 will be taken as default.
+It is also possible to specify a list or range for every device which will be used for a single scan.
+
+Enter a list or range of ports in object portList, if you want. This overwrites the setting in config.
+Set scan to true, this will scan for all open ports in the range of 0-65535 or what is defined in portList. This process takes a while. 
 The result will be written to object ports.
 
 ---
