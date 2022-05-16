@@ -1,0 +1,4 @@
+chore: release v0.2.0
+
+* add feature to define ports they should be scanned
+ * fix crash if no MAC address can be found by the adapter

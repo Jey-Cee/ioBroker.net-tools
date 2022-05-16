@@ -72,6 +72,9 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 
 ## Changelog
+### **WORK IN PROGRESS**
+ * add feature to define ports they should be scanned
+ * fix crash if no MAC address can be found by the adapter
 
 ### 0.1.7 (2021-07-31)
 * fix device settings in adapter configuration
@@ -89,16 +92,14 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 * added device discovery to configuration page
 * start discovery if it is not started and stop it afterwards
 
-
 ### 0.1.1 
 * initial release
-
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2020-2021, Jey Cee <jey-cee@live.com>
+Copyright (c) 2020-2022, Jey Cee <jey-cee@live.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
