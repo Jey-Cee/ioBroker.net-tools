@@ -38,18 +38,6 @@
         "es": "arreglar la configuración del dispositivo en la configuración del adaptador",
         "pl": "popraw ustawienia urządzenia w konfiguracji adaptera",
         "zh-cn": "修复适配器配置中的设备设置"
-      },
-      "0.1.5": {
-        "en": "changes on testing"
-      },
-      "0.1.4": {
-        "en": "Fixes for js-controller 3.3"
-      },
-      "0.1.3": {
-        "en": "Fixes for js-controller 3.3"
-      },
-      "0.1.2": {
-        "en": "added device discovery to configuration page \n start discovery if it is not started and stop it afterwards"
       }
     },
     "title": "Net tools",
