@@ -1,47 +1,85 @@
 {
   "name": "iobroker.net-tools",
-  "description": "This adapter cyclic polls configured IPs.",
-  "version": "0.2.0",
-  "author": "Jey Cee <jey-cee@live.com>",
-  "contributors": [
-    "bluefox <dogafox@gmail.com>",
-    "Viktor Demydov <vdemidov@gmail.com>"
-  ],
+  "version": "1.0.0",
+  "description": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
+  "author": {
+    "name": "Jey Cee",
+    "email": "iobroker@all-smart.net"
+  },
   "homepage": "https://github.com/jey-cee/ioBroker.net-tools",
   "license": "MIT",
   "keywords": [
-    "ioBroker",
+    "poll",
     "ping",
-    "home automation",
+    "ip",
     "wake-on-lan",
     "port scan"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jey-Cee/ioBroker.net-tools.git"
+    "url": "https://github.com/jey-cee/ioBroker.net-tools.git"
+  },
+  "engines": {
+    "node": ">= 18"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "2.6.0",
+    "@iobroker/adapter-core": "^3.0.3",
     "wol": "1.0.7",
-    "node-arp": "1.0.6",
+    "@network-utils/arp-lookup": "^2.0.2",
     "evilscan": "1.9.1",
-    "oui": "12.0.5"
+    "oui": "^12.0.75",
+    "@jey-cee/dm-utils": "^0.0.1"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^3.5.9",
-    "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
+    "@alcalzone/release-script": "^3.6.0",
+    "@alcalzone/release-script-plugin-iobroker": "^3.6.0",
     "@alcalzone/release-script-plugin-license": "^3.5.9",
-    "@iobroker/testing": "^3.0.1",
-    "gulp": "^4.0.2",
-    "mocha": "^8.0.1",
-    "chai": "^4.2.0"
+    "@alcalzone/release-script-plugin-manual-review": "^3.5.9",
+    "@iobroker/adapter-dev": "^1.2.0",
+    "@iobroker/testing": "^4.1.0",
+    "@tsconfig/node18": "^18.2.2",
+    "@types/chai": "^4.3.6",
+    "@types/chai-as-promised": "^7.1.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.17.18",
+    "@types/proxyquire": "^1.3.28",
+    "@types/sinon": "^10.0.16",
+    "@types/sinon-chai": "^3.2.9",
+    "chai": "^4.3.8",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "proxyquire": "^2.1.3",
+    "sinon": "^16.0.0",
+    "sinon-chai": "^3.7.0",
+    "typescript": "~5.0.4"
+  },
+  "main": "main.js",
+  "files": [
+    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).{json,json5}",
+    "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
+    "admin/i18n/*.{json,json5}",
+    "lib/",
+    "www/",
+    "io-package.json",
+    "LICENSE",
+    "main.js"
+  ],
+  "scripts": {
+    "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
+    "test:package": "mocha test/package --exit",
+    "test:integration": "mocha test/integration --exit",
+    "test": "npm run test:js && npm run test:package",
+    "check": "tsc --noEmit -p tsconfig.check.json",
+    "lint": "eslint .",
+    "translate": "translate-adapter",
+    "release": "release-script"
   },
   "bugs": {
     "url": "https://github.com/jey-cee/ioBroker.net-tools/issues"
   },
-  "main": "main.js",
-  "scripts": {
-    "test": "node node_modules/mocha/bin/mocha --exit",
-    "release": "release-script"
-  }
+  "readmeFilename": "README.md"
 }

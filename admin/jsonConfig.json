@@ -1,0 +1,21 @@
+{
+	"i18n": true,
+	"type": "panel",
+	"items": {
+		"pingInterval": {
+			"type": "number",
+			"label": "Ping Interval",
+			"newLine": true
+		},
+		"portScan": {
+			"type": "checkbox",
+			"label": "Port Scan",
+			"newLine": true
+		},
+		"portList": {
+			"type": "text",
+			"label": "Port List",
+			"newLine": true
+		}
+	}
+}
