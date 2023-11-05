@@ -71,6 +71,9 @@
             "config": "json"
         },
         "messagebox": true,
+        "supportedMessages": {
+            "deviceManager": true
+        },
         "dependencies": [
             {
                 "js-controller": ">=3.3.22",
