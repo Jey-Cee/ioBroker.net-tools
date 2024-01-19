@@ -1,21 +1,61 @@
 {
 	"i18n": true,
-	"type": "panel",
+	"type": "tabs",
 	"items": {
-		"pingInterval": {
-			"type": "number",
-			"label": "Ping Interval",
-			"newLine": true
+		"settings": {
+			"type": "panel",
+			"label": "Settings",
+			"items": {
+				"licenseKey": {
+					"type": "text",
+					"label": "License Key",
+					"help": {
+						"en": "Enter your license key here. You can buy one in the ALL SMART shop.",
+						"de": "Geben Sie hier Ihren Lizenzschlüssel ein. Sie können einen im ALL SMART Shop kaufen."
+					},
+					"helpLink": "https://www.all-smart.net/produkt-kategorie/lizenzen/"
+				},
+				"pingInterval": {
+					"type": "number",
+					"label": "Ping Interval",
+					"newLine": true
+				},
+				"portScan": {
+					"type": "checkbox",
+					"label": "Port Scan",
+					"newLine": true
+				},
+				"portList": {
+					"type": "text",
+					"label": "Port List",
+					"newLine": true
+				}
+			}
 		},
-		"portScan": {
-			"type": "checkbox",
-			"label": "Port Scan",
-			"newLine": true
-		},
-		"portList": {
-			"type": "text",
-			"label": "Port List",
-			"newLine": true
+		"_deviceManager": {
+			"type": "panel",
+			"label": "Devices",
+			"items": {
+				"_dm": {
+					"type": "deviceManager",
+					"sm": 12,
+					"style": {
+						"width": "100%",
+						"height": "100%",
+						"overflow": "hidden"
+					}
+				}
+			},
+			"style": {
+				"width": "100%",
+				"height": "100%",
+				"overflow": "hidden"
+			},
+			"innerStyle": {
+				"width": "100%",
+				"height": "100%",
+				"overflow": "hidden"
+			}
 		}
 	}
 }

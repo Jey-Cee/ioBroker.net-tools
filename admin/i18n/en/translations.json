@@ -2,5 +2,7 @@
 	"net-tools adapter settings": "Adapter settings for net-tools",
 	"Ping Interval": "Ping Interval in seconds",
 	"Port Scan": "Run port scan for localhost on start",
-	"Port List": "List of ports to scan"
+	"Port List": "List of ports to scan",
+	"Settings": "Settings",
+	"Devices": "Devices"
 }

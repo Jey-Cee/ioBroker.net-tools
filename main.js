@@ -6,6 +6,7 @@
 
 const utils = require('@iobroker/adapter-core');
 const dmNetTools  = require('./lib/devicemgmt.js');
+const asTools = require('@all-smart/all-smart-tools');
 const arp = require('@network-utils/arp-lookup');
 const wol         = require('wol');
 const portscanner = require('evilscan');
@@ -44,22 +45,29 @@ class NetTools extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
+		this.asTools = new asTools(this);
 		//TODO: check on startup if IP addresses has changed. Look on the MAC list?
-		this.extendHostInformation();
+		if (!this.config.licenseKey) {
+			this.log.error(
+				'License Key is not set! Enter a valid license key in the adapter settings.'
+			);
+		} else {
+			this.extendHostInformation();
+			await this.asTools.checkObjectsUpdate();
+			this.config.pingInterval = parseInt(this.config.pingInterval, 10);
 
-		this.config.pingInterval = parseInt(this.config.pingInterval, 10);
+			if (this.config.pingInterval < 5) {
+				this.log.warn('Poll interval is too short. Reset to 5s.');
+				this.config.pingInterval = 5;
+			}
 
-		if (this.config.pingInterval < 5) {
-			this.log.warn('Poll interval is too short. Reset to 5s.');
-			this.config.pingInterval = 5;
+			const preparedObjects = await this.prepareObjectsByConfig();
+			this.pingAll();
+
+			this.subscribeStates('*discover');
+			this.subscribeStates('*wol');
+			this.subscribeStates('*scan');
 		}
-
-		const preparedObjects = await this.prepareObjectsByConfig();
-		this.pingAll();
-
-		this.subscribeStates('*discover');
-		this.subscribeStates('*wol');
-		this.subscribeStates('*scan');
 	}
 
 	/**
@@ -266,7 +274,7 @@ class NetTools extends utils.Adapter {
 		wol.wake(mac, (err, res) => {
 			wolTries = wolTries - 1;
 			if (err) {
-				this.log.debug(err);
+				this.log.debug('Wake-on-LAN error: ' + err);
 				wolTries = 3;
 			}
 			if (wolTries > 0){
@@ -349,7 +357,6 @@ class NetTools extends utils.Adapter {
 	async addDevice(ip, name, enabled, mac, pingInterval, retries){
 		let idName, vendor = '';
 		if (!mac || mac === '') {
-			this.log.info(ip);
 			mac = await arp.toMAC(ip);
 
 			this.log.info(`MAC address for ${ip}: ${mac}`);
@@ -500,7 +507,6 @@ class NetTools extends utils.Adapter {
 
 	pingAll() {
 		for(const host in taskList) {
-			this.log.info(host);
 			this.pingDevice(host);
 		}
 	}
@@ -542,7 +548,6 @@ class NetTools extends utils.Adapter {
 	 * @return {{ping_task: {stateTime: {channel: (string|*), state: string}, stateRps: {channel: (string|*), state: string}, host: *, extendedInfo: boolean, pingInterval: number, retries: number, retryCounter: number, stateAlive: {channel: (string|*), state: string}}}}
 	 */
 	prepareObjectsForHost(config) {
-		this.log.info(JSON.stringify(config));
 		const host = config.ip;
 		const mac = config.mac;
 		const idName = mac ? mac.replace(FORBIDDEN_CHARS, '_').replace(/:/g, '') : config.name;
