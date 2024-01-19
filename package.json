@@ -7,7 +7,7 @@
     "email": "iobroker@all-smart.net"
   },
   "homepage": "https://github.com/jey-cee/ioBroker.net-tools",
-  "license": "MIT",
+  "license": "CC-BY-NC-4.0",
   "keywords": [
     "poll",
     "ping",
