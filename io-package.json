@@ -1,137 +1,181 @@
 {
-  "common": {
-    "name": "net-tools",
-    "version": "0.2.0",
-    "news": {
-      "0.2.0": {
-        "en": "add feature to define ports they should be scanned\nfix crash if no MAC address can be found by the adapter",
-        "de": "Funktion hinzufügen, um Ports zu definieren, die gescannt werden sollen\nAbsturz behoben, wenn keine MAC-Adresse vom Adapter gefunden werden kann",
-        "ru": "добавить функцию для определения портов, которые они должны сканировать\nисправить сбой, если адаптер не может найти MAC-адрес",
-        "pt": "adicionar recurso para definir portas que devem ser verificadas\ncorrija a falha se nenhum endereço MAC puder ser encontrado pelo adaptador",
-        "nl": "functie toevoegen om poorten te definiëren die moeten worden gescand\ncrash repareren als de adapter geen MAC-adres kan vinden",
-        "fr": "ajouter une fonctionnalité pour définir les ports qu'ils doivent analyser\ncorrection d'un crash si aucune adresse MAC ne peut être trouvée par l'adaptateur",
-        "it": "aggiungi funzionalità per definire le porte da scansionare\ncorreggere l'arresto anomalo se non è possibile trovare un indirizzo MAC dall'adattatore",
-        "es": "agregue la función para definir los puertos que deben escanearse\ncorrige el bloqueo si el adaptador no puede encontrar una dirección MAC",
-        "pl": "dodaj funkcję, aby zdefiniować porty, które powinny być skanowane\nnapraw awarię, jeśli adapter nie może znaleźć adresu MAC",
-        "zh-cn": "添加功能以定义应扫描的端口\n如果适配器找不到 MAC 地址，则修复崩溃"
-      },
-      "0.1.7": {
-        "en": "fix device settings in adapter configuration",
-        "de": "Geräteeinstellungen in der Adapterkonfiguration korrigieren",
-        "ru": "исправить настройки устройства в конфигурации адаптера",
-        "pt": "corrigir as configurações do dispositivo na configuração do adaptador",
-        "nl": "apparaatinstellingen repareren in adapterconfiguratie",
-        "fr": "corriger les paramètres de l'appareil dans la configuration de l'adaptateur",
-        "it": "correggere le impostazioni del dispositivo nella configurazione dell'adattatore",
-        "es": "arreglar la configuración del dispositivo en la configuración del adaptador",
-        "pl": "popraw ustawienia urządzenia w konfiguracji adaptera",
-        "zh-cn": "修复适配器配置中的设备设置"
-      },
-      "0.1.6": {
-        "en": "fix device settings in adapter configuration",
-        "de": "Geräteeinstellungen in der Adapterkonfiguration korrigieren",
-        "ru": "исправить настройки устройства в конфигурации адаптера",
-        "pt": "corrigir as configurações do dispositivo na configuração do adaptador",
-        "nl": "apparaatinstellingen repareren in adapterconfiguratie",
-        "fr": "corriger les paramètres de l'appareil dans la configuration de l'adaptateur",
-        "it": "correggere le impostazioni del dispositivo nella configurazione dell'adattatore",
-        "es": "arreglar la configuración del dispositivo en la configuración del adaptador",
-        "pl": "popraw ustawienia urządzenia w konfiguracji adaptera",
-        "zh-cn": "修复适配器配置中的设备设置"
-      }
+    "common": {
+        "name": "net-tools",
+        "version": "1.0.1",
+        "news": {
+            "1.0.1": {
+                "en": "Device manager added to the configuration.\n BREAKING CHANGE: -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/ -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/",
+                "de": "Gerätemanager zur Konfiguration hinzugefügt.\n BREAKING CHANGE: Ab version 1.0.1 ist eine Lizenz erforderlich um den Adapter zu benutzen. -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/"
+            },
+            "1.0.0": {
+                "en": "Complete rewrite of the adapter",
+                "de": "Komplette Neuentwicklung des Adapters",
+                "ru": "Полная переработка адаптера",
+                "pt": "Reescrita completa do adaptador",
+                "nl": "Volledige herwerking van de adapter",
+                "fr": "Réécriture complète de l'adaptateur",
+                "it": "Riscrittura completa dell'adattatore",
+                "es": "Reescritura completa del adaptador",
+                "pl": "Całkowicie nowa wersja adaptera",
+                "uk": "Повна переробка адаптера",
+                "zh-cn": "适配器的完全重写"
+            }
+        },
+        "messages": [
+            {
+                "condition": {
+                    "operand": "and",
+                    "rules": [
+                        "oldVersion<1.0.1",
+                        "newVersion>=1.0.1"
+                    ]
+                },
+                "title": {
+                    "en": "Important notice!",
+                    "de": "Wichtiger Hinweis!"
+                },
+                "text": {
+                    "en": "From version 1.0.1 a license is required to use the adapter. You can buy it here -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/\n If you have supported me in the past i will give you a free license, please contact me with name and Paypal address: iobroker@all-smart.net",
+                    "de": "Ab version 1.0.1 ist eine Lizenz erforderlich um den Adapter zu benutzen. Die Lizenz kann hier gekauft werden -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/\n Wer mich in der Vergangenheit unterstützt hat, bekommt eine kostenlose Lizenz, bitte kontaktieren Sie mich mit Namen und Paypal Adresse: iobroker@all-smart.net"
+                },
+                "level": "warn",
+                "buttons": [
+                    "agree",
+                    "cancel"
+                ]
+            }
+        ],
+        "title": "Net tools",
+        "titleLang": {
+            "en": "Net tools",
+            "de": "Netzwerkzeuge",
+            "ru": "Чистые инструменты",
+            "pt": "Ferramentas de rede",
+            "nl": "Netto hulpmiddelen",
+            "fr": "Outils Internet",
+            "it": "Strumenti della rete",
+            "es": "herramientas netas",
+            "pl": "Narzędzia sieciowe",
+            "uk": "Чистий інструмент",
+            "zh-cn": "网络工具"
+        },
+        "desc": {
+            "en": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
+            "de": "Dieser Adapter fragt zyklisch konfigurierte IPs ab, kann Wake-on-Lan-Pakete senden und nach offenen Ports suchen.",
+            "ru": "Этот адаптер циклически опрашивает настроенные IP-адреса, может отправлять пакеты пробуждения по локальной сети и сканировать открытые порты.",
+            "pt": "Este adaptador pesquisa cíclicamente os IPs configurados, pode enviar pacotes wake-on-lan e procurar portas abertas.",
+            "nl": "Deze adapter peilt cyclisch geconfigureerde IP's, kan wake-on-lan-pakketten verzenden en scannen op open poorten.",
+            "fr": "Cet adaptateur interroge cycliquement les adresses IP configurées, peut envoyer des packages wake-on-lan et rechercher les ports ouverts.",
+            "it": "Questo adattatore esegue il polling ciclico degli IP configurati, può inviare pacchetti wake-on-lan ed eseguire la scansione delle porte aperte.",
+            "es": "Este adaptador sondea cíclicamente las IP configuradas, puede enviar paquetes Wake-on-LAN y buscar puertos abiertos.",
+            "pl": "Ten adapter cyklicznie odpytuje skonfigurowane adresy IP, może wysyłać pakiety wake-on-lan i skanować w poszukiwaniu otwartych portów.",
+            "uk": "Цей адаптер циклічно опитує налаштовані IP-адреси, може надсилати пакети wake-on-lan і сканувати відкриті порти.",
+            "zh-cn": "该适配器循环轮询配置的 IP，可以发送 LAN 唤醒包并扫描开放端口。"
+        },
+        "authors": [
+            "Jey Cee <iobroker@all-smart.net>"
+        ],
+        "keywords": [
+            "poll",
+            "ping",
+            "ip",
+            "wake-on-lan",
+            "port scan"
+        ],
+        "license": "CC-BY-NC-4.0",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "net-tools.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/jey-cee/ioBroker.net-tools/main/admin/net-tools.png",
+        "readme": "https://github.com/jey-cee/ioBroker.net-tools/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "network",
+        "compact": true,
+        "tier": 2,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json"
+        },
+        "messagebox": true,
+        "supportedMessages": {
+            "deviceManager": true
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22",
+                "discovery": ">=2.3.7"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=6.13.15"
+            }
+        ]
     },
-    "title": "Net tools",
-    "titleLang": {
-      "en": "Net tools",
-      "de": "Net Tools",
-      "ru": "Сетевые инструменты",
-      "pt": "Ferramentas de rede",
-      "nl": "Net tools",
-      "fr": "Outils nets",
-      "it": "Strumenti di rete",
-      "es": "Herramientas de red",
-      "pl": "Narzędzia sieciowe",
-      "zh-cn": "网络工具"
+    "native": {
+        "licenseKey": "",
+        "licenseActivated": false,
+        "pingInterval": 60,
+        "portScan": true,
+        "portList": "20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999"
     },
-    "desc": {
-      "en": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
-      "de": "Dieser Adapter fragt zyklisch konfigurierte IPs ab, kann Wake-on-LAN-Pakete senden und nach offenen Ports suchen.",
-      "ru": "Этот адаптер циклически опрашивает настроенные IP-адреса, может отправлять пакеты wake-on-lan и сканировать открытые порты.",
-      "pt": "Este adaptador cíclico pesquisa IPs configurados, pode enviar pacotes wake-on-lan e fazer a varredura para portas abertas.",
-      "nl": "Deze adapter pollt cyclisch geconfigureerde IP-adressen, kan wake-on-lan-pakketten verzenden en scannen op open poorten.",
-      "fr": "Cet adaptateur interroge cycliquement les adresses IP configurées, peut envoyer des packages Wake-on-LAN et rechercher les ports ouverts.",
-      "it": "Questo adattatore esegue il polling ciclico degli IP configurati, può inviare pacchetti Wake-on-Lan e cercare porte aperte.",
-      "es": "Este adaptador sondea cíclicamente las IP configuradas, puede enviar paquetes de activación en lan y buscar puertos abiertos.",
-      "pl": "Ten adapter cyklicznie odpytuje skonfigurowane adresy IP, może wysyłać pakiety wake-on-lan i skanować w poszukiwaniu otwartych portów.",
-      "zh-cn": "该适配器循环轮询配置的IP，可以发送局域网唤醒软件包并扫描打开的端口。"
-    },
-    "authors": [
-      "jey-cee <jey-cee@live.com>"
-    ],
-    "license": "MIT",
-    "platform": "Javascript/Node.js",
-    "mode": "daemon",
-    "compact": true,
-    "availableModes": [
-      "daemon"
-    ],
-    "readme": "https://github.com/jey-cee/ioBroker.net-tools/blob/master/README.md",
-    "loglevel": "info",
-    "icon": "net-tools.png",
-    "keywords": [
-      "poll",
-      "ping",
-      "ip",
-      "wake-on-lan",
-      "port scan"
-    ],
-    "extIcon": "https://raw.githubusercontent.com/jey-cee/ioBroker.net-tools/master/admin/net-tools.png",
-    "type": "network",
-    "materialize": true,
-    "messagebox": true,
-    "connectionType": "local",
-    "dataSource": "poll",
-    "dependencies": [
-      {
-        "js-controller": ">=3.1.6",
-        "discovery": ">=2.3.7"
-      }
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "localhost",
+            "type": "channel",
+            "common": {
+                "name": "localhost"
+            }
+        },
+        {
+            "_id": "localhost.ports",
+            "type": "state",
+            "common": {
+                "name": {
+                    "en": "Open ports",
+                    "de": "Offene Ports",
+                    "ru": "Открытые порты",
+                    "pt": "Portas abertas",
+                    "nl": "Open poorten",
+                    "fr": "Ports ouverts",
+                    "it": "Porte aperte",
+                    "es": "Puertos abiertos",
+                    "pl": "Otwarte porty",
+                    "zh-cn": "打开端口",
+                    "uk": "Відкриті порти"
+                },
+                "read": true,
+                "write": false,
+                "role": "list",
+                "type": "array"
+            }
+        },
+        {
+            "_id": "discover",
+            "type": "state",
+            "common": {
+                "name": {
+                    "en": "Discover devices",
+                    "de": "Geräte suchen",
+                    "ru": "Обнаружить устройства",
+                    "pt": "Descobrir dispositivos",
+                    "nl": "Apparaten ontdekken",
+                    "fr": "Découvrir les appareils",
+                    "it": "Scopri dispositivi",
+                    "es": "Descubrir dispositivos",
+                    "pl": "Odkryj urządzenia",
+                    "zh-cn": "发现设备",
+                    "uk": "Виявити пристрої"
+                },
+                "read": false,
+                "write": true,
+                "role": "button",
+                "type": "boolean"
+            }
+        }
     ]
-  },
-  "native": {
-    "interval": 60000,
-    "portScan": true,
-    "ports": "20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999"
-  },
-  "instanceObjects": [
-    {
-      "_id": "localhost",
-      "type": "channel",
-      "common": {
-        "name": "localhost"
-      }
-    },
-    {
-      "_id": "localhost.ports",
-      "type": "state",
-      "common": {
-        "name": "Open Ports",
-        "read": true,
-        "write": false,
-        "role": "list",
-        "type": "array"
-      }
-    },
-    {
-      "_id": "discover",
-      "type": "state",
-      "common": {
-        "name": "discover",
-        "read": false,
-        "write": true,
-        "role": "button",
-        "type": "boolean"
-      }
-    }
-  ]
 }

@@ -1,0 +1,8 @@
+{
+    "net-tools adapter settings": "Adaptereinstellungen für net-tools",
+    "Ping Interval": "Ping Intervall in Sekunden",
+    "Port Scan": "Port-Scan für localhost beim Start ausführen",
+	"Port List": "Liste der zu scannenden Ports",
+    "Settings": "Einstellungen",
+    "Devices": "Geräte"
+}
