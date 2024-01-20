@@ -1,6 +1,6 @@
 {
   "name": "iobroker.net-tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan for open ports.",
   "author": {
     "name": "Jey Cee",

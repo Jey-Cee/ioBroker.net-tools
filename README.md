@@ -62,6 +62,11 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 -->
 
 ### **WORK IN PROGRESS**
+
+### 1.0.2 20.01.2024
+* (Jey Cee) bugfix require
+
+### 1.0.1 19.01.2024
 * (Jey Cee) add device manager to configuration
 * (Jey Cee) add use of license
 

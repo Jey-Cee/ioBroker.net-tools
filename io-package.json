@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "news": {
+            "1.0.2": {
+                "en": "bugfix require"
+            },
             "1.0.1": {
                 "en": "Device manager added to the configuration.\n BREAKING CHANGE: -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/ -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/",
                 "de": "Gerätemanager zur Konfiguration hinzugefügt.\n BREAKING CHANGE: Ab version 1.0.1 ist eine Lizenz erforderlich um den Adapter zu benutzen. -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/"
