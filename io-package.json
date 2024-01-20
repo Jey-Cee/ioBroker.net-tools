@@ -3,6 +3,9 @@
         "name": "net-tools",
         "version": "1.0.3",
         "news": {
+            "1.0.3": {
+                "en": "bugfix require"
+            },
             "1.0.2": {
                 "en": "bugfix require"
             },
