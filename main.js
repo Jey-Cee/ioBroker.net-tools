@@ -91,6 +91,7 @@ class NetTools extends utils.Adapter {
 			}
 			if(pingTimeout) {
 				clearTimeout(pingTimeout);
+				pingTimeout = null;
 			}
 			isStopping = true;
 
@@ -477,6 +478,13 @@ class NetTools extends utils.Adapter {
 		}
 	}
 
+	/**
+	 * Pings a device to check its availability.
+	 *
+	 * @param {string} host - The hostname or IP address of the device to ping.
+	 *
+	 * @return {undefined}
+	 */
 	pingDevice(host) {
 		if(!taskList[host]) {
 			return;
@@ -486,15 +494,22 @@ class NetTools extends utils.Adapter {
 
 			if (result) {
 				if (result.alive === true) {
-
-					this.setState(taskList[host].stateAlive.channel + '.alive', { val: true, ack: true });
-					this.setState(taskList[host].stateTime.channel + '.time', { val: result.ms === null ? 0 : result.ms / 1000, ack: true });
-					let rps = 0;
-					if (result.alive && result.ms !== null && result.ms > 0) {
-						rps = result.ms <= 1 ? 1000 : 1000.0 / result.ms;
+					try {
+						this.setState(taskList[host].stateAlive.channel + '.alive', {val: true, ack: true});
+						this.setState(taskList[host].stateTime.channel + '.time', {
+							val: result.ms === null ? 0 : result.ms / 1000,
+							ack: true
+						});
+						let rps = 0;
+						if (result.alive && result.ms !== null && result.ms > 0) {
+							rps = result.ms <= 1 ? 1000 : 1000.0 / result.ms;
+						}
+						this.setState(taskList[host].stateRps.channel + '.rps', {val: rps, ack: true});
+						taskList[host].retryCounter = 0;
+					} catch (error) {
+						this.log.warn(error);
+						this.log.warn('Try to set states after ping for host: ' + host);
 					}
-					this.setState(taskList[host].stateRps.channel + '.rps', { val: rps, ack: true });
-					taskList[host].retryCounter = 0;
 				} else if(taskList[host].retryCounter <= taskList[host].retries) {
 					taskList[host].retryCounter++;
 				} else {
@@ -503,8 +518,10 @@ class NetTools extends utils.Adapter {
 				}
 			}
 
-			// Planen Sie den nächsten Ping basierend auf dem Intervall
-			pingTimeout = setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
+			if(!isStopping) {
+				// Planen Sie den nächsten Ping basierend auf dem Intervall
+				pingTimeout = setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
+			}
 		});
 	}
 
