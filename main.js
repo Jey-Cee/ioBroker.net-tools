@@ -19,6 +19,7 @@ let isStopping = false;
 let wolTries = 3;
 let wolTimer = null;
 let discoverTimeout = null;
+let pingTimeout = null;
 let taskList = [];
 
 const FORBIDDEN_CHARS = /[\]\[*,;'"`<>\\?]/g;
@@ -87,6 +88,9 @@ class NetTools extends utils.Adapter {
 			if (discoverTimeout) {
 				clearTimeout(discoverTimeout);
 				discoverTimeout = null;
+			}
+			if(pingTimeout) {
+				clearTimeout(pingTimeout);
 			}
 			isStopping = true;
 
@@ -422,8 +426,8 @@ class NetTools extends utils.Adapter {
 			this.log.info(`${name} deleted`);
 			// Delete device from taskList
 			for(const i in taskList){
-				if(taskList[i].host === name){
-					taskList.splice(i, 1, null);
+				if(taskList[i].stateAlive.channel === name){
+					taskList.splice(parseInt(i), 1, null);
 				}
 			}
 
@@ -466,44 +470,6 @@ class NetTools extends utils.Adapter {
 		}
 	}
 
-	/*pingAll(taskList, index) {
-		this.log.warn(index);
-		this.log.info(JSON.stringify(taskList));
-		stopTimer && clearTimeout(stopTimer);
-		stopTimer = null;
-
-		if (index >= taskList.length) {
-			timer = setTimeout(() => this.pingAll(taskList, 0), this.config.pingInterval * 1000);
-			return;
-		}
-
-		const task = taskList[index];
-		index++;
-		// this.log.debug('Pinging ' + task.host);
-
-		ping.probe(task.host, {log: this.log.debug}, (err, result) => {
-			err && this.log.error(err);
-
-			if (result) {
-				// this.log.debug('Ping result for ' + result.host + ': ' + result.alive + ' in ' + (result.ms === null ? '-' : result.ms) + 'ms');
-
-				if (task.extendedInfo) {
-					this.setState(task.stateAlive, {val: result.alive, ack: true});
-					this.setState(task.stateTime, {val: result.ms === null ? 0 : result.ms / 1000, ack: true});
-
-					let rps = 0;
-					if (result.alive && result.ms !== null && result.ms > 0) {
-						rps = result.ms <= 1 ? 1000 : 1000.0 / result.ms;
-					}
-					this.setState(task.stateRps, { val: rps, ack: true });
-				} else {
-					this.setState(task.stateAlive, { val: result.alive, ack: true });
-				}
-			}
-
-			!isStopping && setTimeout(() => this.pingAll(taskList, index), taskList[index - 1].pingInterval * 1000);
-		});
-	}*/
 
 	pingAll() {
 		for(const host in taskList) {
@@ -520,6 +486,7 @@ class NetTools extends utils.Adapter {
 
 			if (result) {
 				if (result.alive === true) {
+
 					this.setState(taskList[host].stateAlive.channel + '.alive', { val: true, ack: true });
 					this.setState(taskList[host].stateTime.channel + '.time', { val: result.ms === null ? 0 : result.ms / 1000, ack: true });
 					let rps = 0;
@@ -537,7 +504,7 @@ class NetTools extends utils.Adapter {
 			}
 
 			// Planen Sie den nächsten Ping basierend auf dem Intervall
-			this.setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
+			pingTimeout = setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
 		});
 	}
 
