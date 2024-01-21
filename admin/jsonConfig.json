@@ -9,6 +9,7 @@
 				"licenseKey": {
 					"type": "text",
 					"label": "License Key",
+					"trim": true,
 					"help": {
 						"en": "Enter your license key here. You can buy one in the ALL SMART shop.",
 						"de": "Geben Sie hier Ihren Lizenzschlüssel ein. Sie können einen im ALL SMART Shop kaufen."
