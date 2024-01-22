@@ -312,6 +312,9 @@ class NetTools extends utils.Adapter {
 				if(result === null || result === undefined){
 					this.log.warn('Discovery timeout');
 					return false;
+				} else if(result.error === 'Yet running') {
+					this.log.warn('Discovery is already running, please re-run device search.');
+                    return false;
 				}
 				if(!discoveryEnabled){
 					await this.extendForeignObjectAsync('system.adapter.discovery.0', {
@@ -492,9 +495,12 @@ class NetTools extends utils.Adapter {
 		ping.probe(taskList[host].host, { log: this.log.debug }, (err, result) => {
 			err && this.log.error(err);
 
+			if(taskList.length === 0){
+				return;
+			}
+
 			if (result) {
 				if (result.alive === true) {
-					try {
 						this.setState(taskList[host].stateAlive.channel + '.alive', {val: true, ack: true});
 						this.setState(taskList[host].stateTime.channel + '.time', {
 							val: result.ms === null ? 0 : result.ms / 1000,
@@ -506,10 +512,6 @@ class NetTools extends utils.Adapter {
 						}
 						this.setState(taskList[host].stateRps.channel + '.rps', {val: rps, ack: true});
 						taskList[host].retryCounter = 0;
-					} catch (error) {
-						this.log.warn(error);
-						this.log.warn('Try to set states after ping for host: ' + host);
-					}
 				} else if(taskList[host].retryCounter <= taskList[host].retries) {
 					taskList[host].retryCounter++;
 				} else {
