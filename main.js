@@ -49,10 +49,12 @@ class NetTools extends utils.Adapter {
 		this.asTools = new asTools(this);
 		//TODO: check on startup if IP addresses has changed. Look on the MAC list?
 		if (!this.config.licenseKey) {
+			await this.setStateAsync('info.connection', {val: false, ack: true});
 			this.log.error(
 				'License Key is not set! Enter a valid license key in the adapter settings.'
 			);
 		} else {
+			await this.setStateAsync('info.connection', {val: true, ack: true});
 			this.extendHostInformation();
 			await this.asTools.checkObjectsUpdate();
 			this.config.pingInterval = parseInt(this.config.pingInterval, 10);

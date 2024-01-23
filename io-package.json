@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "news": {
+            "1.0.4": {
+                "en": "Fix some problems\n Update dependencies",
+                "de": "Einige probleme behoben\n Abhängigkeiten aktualisiert"
+            },
             "1.0.3": {
                 "en": "bugfix require"
             },
@@ -182,6 +186,27 @@
                 "role": "button",
                 "type": "boolean"
             }
+        },
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Everything is OK",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
         }
     ]
 }
