@@ -17,6 +17,9 @@ This adapter cyclic polls configured IPs, can send wake-on-lan packages and scan
 This discovery feature is provided by discovery adapter, which means discovery will be installed if is not and it has to run.
 Remark: This feature is limited to the subnet of the ioBroker host.
 
+### Important: You have to buy a license to use this adapter. You can buy one here -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/
+### Wichtig: Für die Nutzung dieses Adapters müssen Sie eine Lizenz erwerben. Sie können eine hier kaufen -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/
+
 ### Pings configured IP addresses
 
 Pings specified IP addresses in defined interval and monitors the results. (alive, rps, time)
