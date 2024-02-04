@@ -23,7 +23,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 ### Auto discovery
 
 There is automatic search feature to find devices. It is also possible to execute it scheduled.
-Note: If you are using ioBroker within a docker container this feature does not work.
+Note: If you are using ioBroker within a docker container this feature will not work depending on your network configuration.
 
 ### Pings configured IP addresses
 
