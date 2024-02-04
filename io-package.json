@@ -130,6 +130,8 @@
         "interface": "",
         "startIp": "",
         "endIp": "",
+        "autoSearch": false,
+        "searchSchedule": "",
         "pingInterval": 60,
         "portScan": true,
         "portList": "20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999"

@@ -64,6 +64,22 @@
 					},
 					"newLine": true
 				},
+				"autoSearch": {
+					"type": "checkbox",
+					"label": {
+						"en": "Auto discover devices",
+						"de": "Automatische Erkennung von Geräten"
+					},
+					"newLine": true
+				},
+				"searchSchedule": {
+					"type": "cron",
+					"complex": true,
+					"label": {
+						"en": "Time schedule for the search",
+						"de": "Zeitplan für die Suche"
+					}
+				},
 				"pingInterval": {
 					"type": "number",
 					"label": "Ping Interval",

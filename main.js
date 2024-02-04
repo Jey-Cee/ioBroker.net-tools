@@ -15,7 +15,8 @@ const portscanner = require('evilscan');
 const oui = require('oui');
 const ping        = require('./lib/ping');
 const objects = require('./lib/object_definition').object_definitions;
-const { nslookup } = require('./lib/nslookup')
+const { nslookup } = require('./lib/nslookup');
+const { CronJob } = require('cron');
 
 let timer      = null;
 let isStopping = false;
@@ -69,6 +70,15 @@ class NetTools extends utils.Adapter {
 
 			const preparedObjects = await this.prepareObjectsByConfig();
 			this.pingAll();
+
+			if(this.config.autoSearch === true && this.config.searchSchedule !== ''){
+				this.log.info('Auto search is enabled');
+				const cronJob = new CronJob(this.config.searchSchedule, () => {
+					this.log.info('Start auto search');
+                    this.discover();
+                });
+                cronJob.start();
+			}
 
 			this.subscribeStates('*discover');
 			this.subscribeStates('*wol');
