@@ -499,6 +499,9 @@ class NetTools extends utils.Adapter {
 			this.log.info(`${name} deleted`);
 			// Delete device from taskList
 			for(const i in taskList){
+				if(taskList[i] === null){
+					continue;
+				}
 				if(taskList[i].stateAlive.channel === name){
 					taskList.splice(parseInt(i), 1, null);
 				}
@@ -564,7 +567,7 @@ class NetTools extends utils.Adapter {
 		ping.probe(taskList[host].host, { log: this.log.debug }, (err, result) => {
 			err && this.log.error(err);
 
-			if(taskList.length === 0){
+			if(taskList.length === 0 && taskList[host] === null){
 				return;
 			}
 
