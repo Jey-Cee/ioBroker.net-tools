@@ -5,6 +5,8 @@
  */
 
 const utils = require('@iobroker/adapter-core');
+const os = require('os');
+const { spawn } = require('child_process');
 const dmNetTools  = require('./lib/devicemgmt.js');
 const asTools = require('@all-smart/all-smart-tools');
 const arp = require('@network-utils/arp-lookup');
@@ -13,6 +15,7 @@ const portscanner = require('evilscan');
 const oui = require('oui');
 const ping        = require('./lib/ping');
 const objects = require('./lib/object_definition').object_definitions;
+const { nslookup } = require('./lib/nslookup')
 
 let timer      = null;
 let isStopping = false;
@@ -297,73 +300,127 @@ class NetTools extends utils.Adapter {
 
 	async discover(){
 		const oldDevices = await this.getDevicesAsync();
-		const discovery = await this.getForeignStateAsync('system.adapter.discovery.0.alive');
-		let discoveryEnabled = true;
 
-		if(!discovery?.val){
-			discoveryEnabled = false;
-			await this.extendForeignObjectAsync('system.adapter.discovery.0', {
-				common: {
-					enabled: true
-				}
-			});
-		}
-		discoverTimeout = setTimeout( async() => {
-			try {
-				const result = await this.sendToAsync('discovery.0', 'browse', ['ping']);
-				if(result === null || result === undefined){
-					this.log.warn('Discovery timeout');
-					return false;
-				} else if(result.error === 'Yet running') {
-					this.log.warn('Discovery is already running, please re-run device search.');
-                    return false;
-				}
-				if(!discoveryEnabled){
-					await this.extendForeignObjectAsync('system.adapter.discovery.0', {
-						common: {
-							enabled: false
+		try {
+			const ips = this.getIpRange();
+			const decimalSeparator = getDecimalSeparator();
+			let foundDevices = ['127.0.0.1'];
+ 			for(let ip in ips) {
+				 ping.probe(ips[ip], {timeout: parseFloat(`0${decimalSeparator}25`)}, async (error, result) => {
+					if (result.alive === true) {
+						result.mac = await arp.toMAC(result.host);
+						if(result.mac !== undefined && result.mac !== null){
+							result.vendor = oui(result.mac)
+						} else {
+							return;
 						}
-					});
-				}
-
-				for (const device of result.devices) {
-					if (device._addr !== '127.0.0.1' && device._addr !== '0.0.0.0') {
-						const mac = await arp.toMAC (device._addr);
-						const vendor = oui(mac);
+						try {
+							result.name = await nslookup(result.host);
+						} catch (error) {
+							result.name = result.host;
+						}
 						let exists = false;
 
 						for (const entry of oldDevices) {
-							if (entry.native !== undefined && entry.native.mac === device.mac) {
+							if (entry.native !== undefined && entry.native.mac === result.mac) {
 								exists = true;
 							}
-							if (exists === true && entry.native !== undefined && entry.native.ip !== device._addr) {
-								const idName = mac.replace(/:/g, '');
+							if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
+								const idName = result.mac.replace(/:/g, '');
 								await this.extendObjectAsync(this.namespace + '.' + idName, {
 									native: {
-										ip: device._addr,
-										vendor: vendor
+										ip: result.host,
+										vendor: result.vendor
 									}
 								});
 							}
 						}
-
 						if (!exists) {
-							await this.addDevice(device._addr, device._name, true, mac);
+							await this.addDevice(result.host, result.name, true, result.mac);
 						}
-
-
 					}
-				}
-				const preparedObjects = await this.prepareObjectsByConfig();
-				this.pingAll();
-				return true;
-			} catch (err) {
-				this.log.warn('Discovery faild: ' + err);
-				return false;
+				});
 			}
-		}, 1000);
+
+			const preparedObjects = await this.prepareObjectsByConfig();
+			this.pingAll();
+			return true;
+		} catch (err) {
+			this.log.warn('Discovery faild: ' + err);
+			return false;
+		}
 	}
 
+	/**
+	 * Retrieves the range of IP addresses based on the given configuration.
+	 *
+	 * @returns {Array} - An array of IP addresses in the specified range.
+	 */
+	getIpRange(){
+		const nets = os.networkInterfaces();
+		let iface;
+		let ips = [];
+		if(nets[this.config.interface] && this.config.startIp === '' && this.config.endIp === '') {
+			iface = nets[this.config.interface].filter(net => net.family === 'IPv4');
+			let baseIp = iface[0].address.replace(/\d*$/g, '')
+			let usableIPs = this.calculateUsableIPs(iface[0].netmask);
+			let baseSplit = baseIp.split('.');
+			for (let i = 1; i <= usableIPs; i++) {
+				if(i%254 === 0) {
+					baseSplit[2] = parseInt(baseSplit[2])+1;
+					baseIp = baseSplit.join('.');
+				}
+				ips.push(`${baseIp}${i%254}`);
+			}
+		} else {
+			let start = this.config.startIp.split(".").map(Number);
+			let end = this.config.endIp.split(".").map(Number);
+
+			while(!(start[0] > end[0] || (start[0] === end[0] && (start[1] > end[1] || (start[1] === end[1] && (start[2] > end[2] || (start[2] === end[2] && start[3] > end[3]))))))){
+				ips.push(start.join('.'));
+				start[3]++;
+				for(let i = 3; i > 0; i--){
+					if(start[i] > 255){
+						start[i] = 0;
+						start[i-1]++;
+					}
+				}
+			}
+		}
+
+
+		return ips;
+	}
+
+	/**
+	 * Calculates the number of usable IP addresses based on the given netmask.
+	 *
+	 * @param {string} netmask - The subnet netmask in the format "x.x.x.x".
+	 *                           Each part can have a value from 0 to 255.
+	 *
+	 * @return {number} - The count of usable IP addresses.
+	 */
+	calculateUsableIPs(netmask) {
+		let maskNodes = netmask.match(/(\d+)/g);
+		let cidr = 0;
+
+		for(let i in maskNodes){
+			cidr += ((maskNodes[i] >>> 0).toString(2).match(/1/g) || []).length;
+		}
+
+
+		//-2 for network and broadcast IP
+		return Math.pow(2, (32 - cidr)) - 2;
+	}
+
+	/**
+     * @param {string} ip
+     * @param {string} name
+     * @param {boolean} enabled
+     * @param {string | null | undefined} mac
+     * @param {number} [pingInterval]
+     * @param {number} [retries]
+     */
 	async addDevice(ip, name, enabled, mac, pingInterval, retries){
 		let idName, vendor = '';
 		if (!mac || mac === '') {
@@ -592,6 +649,12 @@ class NetTools extends utils.Adapter {
 			this.portScan('localhost', '127.0.0.1', ports);
 		}
 	}
+
+}
+
+function getDecimalSeparator() {
+	const numberWithDecimalSeparator = 1.1;
+	return Intl.NumberFormat().format(numberWithDecimalSeparator).substring(1, 2);
 }
 
 if (require.main !== module) {

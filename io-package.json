@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "news": {
             "1.0.4": {
                 "en": "Fix some problems\n Update dependencies",
@@ -92,7 +92,7 @@
             "wake-on-lan",
             "port scan"
         ],
-        "license": "CC-BY-NC-4.0",
+        "licenseInformation": "CC-BY-NC-4.0",
         "platform": "Javascript/Node.js",
         "main": "main.js",
         "icon": "net-tools.png",
@@ -115,8 +115,7 @@
         },
         "dependencies": [
             {
-                "js-controller": ">=3.3.22",
-                "discovery": ">=2.3.7"
+                "js-controller": ">=3.3.22"
             }
         ],
         "globalDependencies": [
@@ -128,6 +127,9 @@
     "native": {
         "licenseKey": "",
         "licenseActivated": false,
+        "interface": "",
+        "startIp": "",
+        "endIp": "",
         "pingInterval": 60,
         "portScan": true,
         "portList": "20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999"
@@ -192,19 +194,6 @@
             "type": "channel",
             "common": {
                 "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Everything is OK",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
             },
             "native": {}
         }

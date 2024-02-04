@@ -16,6 +16,54 @@
 					},
 					"helpLink": "https://www.all-smart.net/produkt-kategorie/lizenzen/"
 				},
+				"divider1": {
+					"type": "divider"
+				},
+				"interfaceSelectInfo": {
+					"type": "staticText",
+					"text": {
+						"en": "Select the interface which will be used to scan for devices.",
+						"de": "Wählen Sie die Schnittstelle aus, die für die Suche nach Geräten verwendet werden soll."
+					},
+					"newLine": true
+				},
+				"interface": {
+					"type": "interface",
+					"ignoreLoopback": true,
+					"ignoreInternal": true,
+					"xs": 3,
+					"lg": 3,
+					"md": 3,
+					"sm": 3,
+					"newLine": true
+				},
+				"startIp": {
+					"type": "text",
+					"label": {
+						"en": "Start IP address",
+						"de": "Start IP Adresse"
+					},
+					"trim": true,
+					"placeholder": "192.168.0.1",
+					"newLine": true
+				},
+				"endIp": {
+					"type": "text",
+					"label": {
+						"en": "End IP address",
+						"de": "Letzte IP Adresse"
+					},
+					"trim": true,
+					"placeholder": "192.168.0.254"
+				},
+				"descriptionIpRange": {
+					"type": "staticText",
+					"text": {
+						"en": "If you do not enter a custom IP range Net Tools will determine it by interface configuration.<br>If the IP range is taken from interface configuration the scan process can take a long time to finish.",
+						"de": "Falls kein benutzerdefinierter IP Bereich angeben wird, wird dieser von Net Tools anhand der Schnittstellenkonfiguration ermittelt.<br>Wenn der IP Bereich aus der Schnittstellenkonfiguration übernommen wird, kann der Scanvorgang sehr viel Zeit in Anspruch nehmen."
+					},
+					"newLine": true
+				},
 				"pingInterval": {
 					"type": "number",
 					"label": "Ping Interval",
