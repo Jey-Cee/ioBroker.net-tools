@@ -69,7 +69,12 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### 1.0.5 04.02.2024
+* (Jey Cee) remove discovery adapter as dependency
+* (Jey Cee) add possibility to choose the interface which will be used for ping operations
+* (Jey Cee) add possibility to enter IP range for device discovery
+* (Jey Cee) add auto search by configurable schedule
+* (Jey Cee) fix/catch crash if device was deleted in objects and not in device management
 
 ### 1.0.2 20.01.2024
 * (Jey Cee) bugfix require
