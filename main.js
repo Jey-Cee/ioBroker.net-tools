@@ -17,6 +17,7 @@ const ping        = require('./lib/ping');
 const objects = require('./lib/object_definition').object_definitions;
 const { nslookup } = require('./lib/nslookup');
 const { CronJob } = require('cron');
+const { checkPingRights } = require('./lib/utils');
 
 let timer      = null;
 let isStopping = false;
@@ -59,6 +60,7 @@ class NetTools extends utils.Adapter {
 		} else {
 			this.extendHostInformation();
 			await this.asTools.checkObjectsUpdate();
+			checkPingRights();
 			this.config.pingInterval = parseInt(this.config.pingInterval, 10);
 
 			if (this.config.pingInterval < 5) {

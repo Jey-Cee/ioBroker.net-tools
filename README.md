@@ -75,6 +75,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 * (Jey Cee) add possibility to enter IP range for device discovery
 * (Jey Cee) add auto search by configurable schedule
 * (Jey Cee) fix/catch crash if device was deleted in objects and not in device management
+* (Jey Cee) fix ping rights on lxc containers which prevent to ping devices
 
 ### 1.0.2 20.01.2024
 * (Jey Cee) bugfix require

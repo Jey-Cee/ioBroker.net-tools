@@ -3,6 +3,10 @@
         "name": "net-tools",
         "version": "1.0.5",
         "news": {
+            "1.0.5": {
+                "en": "remove discovery adapter as dependency \nadd possibility to choose the interface which will be used for ping operations \nadd possibility to enter IP range for device discovery \nadd auto search by configurable schedule \nfix/catch crash if device was deleted in objects and not in device management \nfix ping rights on lxc containers which prevent to ping devices",
+                "de": "Discovery-Adapter als Abhängigkeit entfernen \nMöglichkeit hinzufügen, die Schnittstelle zu wählen, die für Ping-Operationen verwendet werden soll \nHinzufügen der Möglichkeit, einen IP-Bereich für die Geräteerkennung einzugeben \nautomatische Suche nach konfigurierbarem Zeitplan hinzufügen \nBehebung eines Absturzes, wenn ein Gerät in Objekten und nicht in der Geräteverwaltung gelöscht wurde \nPing-Rechte auf lxc-Containern beheben, die das Anpingen von Geräten verhindern"
+            },
             "1.0.4": {
                 "en": "Fix some problems\n Update dependencies",
                 "de": "Einige probleme behoben\n Abhängigkeiten aktualisiert"
