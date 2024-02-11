@@ -45,6 +45,13 @@ The result will be written to object ports.
 
 ---
 
+### iPhone 
+
+iPhones try to protect users against tracking while changing the mac address. 
+Read more about it and how to disable for private networks: https://support.apple.com/en-us/102509
+
+---
+
 ## For Developers
 
 #### Get mac for specific device
