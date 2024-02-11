@@ -18,6 +18,7 @@ const objects = require('./lib/object_definition').object_definitions;
 const { nslookup } = require('./lib/nslookup');
 const { CronJob } = require('cron');
 const { checkPingRights } = require('./lib/utils');
+const { calculateSubnetMask } = require('./lib/ip-calculator');
 
 let timer      = null;
 let isStopping = false;
@@ -370,58 +371,33 @@ class NetTools extends utils.Adapter {
 		const nets = os.networkInterfaces();
 		let iface;
 		let ips = [];
+		let startIP, endIP;
 		if(nets[this.config.interface] && this.config.startIp === '' && this.config.endIp === '') {
 			iface = nets[this.config.interface].filter(net => net.family === 'IPv4');
-			let baseIp = iface[0].address.replace(/\d*$/g, '')
-			let usableIPs = this.calculateUsableIPs(iface[0].netmask);
-			let baseSplit = baseIp.split('.');
-			for (let i = 1; i <= usableIPs; i++) {
-				if(i%254 === 0) {
-					baseSplit[2] = parseInt(baseSplit[2])+1;
-					baseIp = baseSplit.join('.');
-				}
-				ips.push(`${baseIp}${i%254}`);
-			}
+			const cidr = iface[0].cidr.split('/');
+			const subnetRange = calculateSubnetMask(cidr[0], parseInt(cidr[1]));
+			startIP = subnetRange.ipLowStr.split(".").map(Number);
+            endIP = subnetRange.ipHighStr.split(".").map(Number);
 		} else {
-			let start = this.config.startIp.split(".").map(Number);
-			let end = this.config.endIp.split(".").map(Number);
+			// Use defined range from config
+			startIP = this.config.startIp.split(".").map(Number);
+			endIP = this.config.endIp.split(".").map(Number);
+		}
 
-			while(!(start[0] > end[0] || (start[0] === end[0] && (start[1] > end[1] || (start[1] === end[1] && (start[2] > end[2] || (start[2] === end[2] && start[3] > end[3]))))))){
-				ips.push(start.join('.'));
-				start[3]++;
-				for(let i = 3; i > 0; i--){
-					if(start[i] > 255){
-						start[i] = 0;
-						start[i-1]++;
-					}
+		while(!(startIP[0] > endIP[0] || (startIP[0] === endIP[0] && (startIP[1] > endIP[1] || (startIP[1] === endIP[1] && (startIP[2] > endIP[2] || (startIP[2] === endIP[2] && startIP[3] > endIP[3]))))))){
+			ips.push(startIP.join('.'));
+			startIP[3]++;
+			for(let i = 3; i > 0; i--){
+				if(startIP[i] > 254){
+					startIP[i] = 0;
+					startIP[i-1]++;
 				}
 			}
 		}
-
 
 		return ips;
 	}
 
-	/**
-	 * Calculates the number of usable IP addresses based on the given netmask.
-	 *
-	 * @param {string} netmask - The subnet netmask in the format "x.x.x.x".
-	 *                           Each part can have a value from 0 to 255.
-	 *
-	 * @return {number} - The count of usable IP addresses.
-	 */
-	calculateUsableIPs(netmask) {
-		let maskNodes = netmask.match(/(\d+)/g);
-		let cidr = 0;
-
-		for(let i in maskNodes){
-			cidr += ((maskNodes[i] >>> 0).toString(2).match(/1/g) || []).length;
-		}
-
-
-		//-2 for network and broadcast IP
-		return Math.pow(2, (32 - cidr)) - 2;
-	}
 
 	/**
      * @param {string} ip
