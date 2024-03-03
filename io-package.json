@@ -59,10 +59,9 @@
                 ]
             }
         ],
-        "title": "Net tools",
         "titleLang": {
             "en": "Net tools",
-            "de": "Netzwerkzeuge",
+            "de": "Netzwerk Werkzeuge",
             "ru": "Чистые инструменты",
             "pt": "Ferramentas de rede",
             "nl": "Netto hulpmiddelen",
@@ -96,7 +95,7 @@
             "wake-on-lan",
             "port scan"
         ],
-        "licenseInformation": "CC-BY-NC-4.0",
+        "licenseInformation": {"license": "CC-BY-NC-4.0", "type":  "paid"},
         "platform": "Javascript/Node.js",
         "main": "main.js",
         "icon": "net-tools.png",
@@ -119,7 +118,7 @@
         },
         "dependencies": [
             {
-                "js-controller": ">=3.3.22"
+                "js-controller": ">=5.0.19"
             }
         ],
         "globalDependencies": [
