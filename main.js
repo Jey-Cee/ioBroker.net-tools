@@ -6,7 +6,6 @@
 
 const utils = require('@iobroker/adapter-core');
 const os = require('os');
-const { spawn } = require('child_process');
 const dmNetTools  = require('./lib/devicemgmt.js');
 const asTools = require('@all-smart/all-smart-tools');
 const arp = require('@network-utils/arp-lookup');
@@ -46,6 +45,8 @@ class NetTools extends utils.Adapter {
 		this.on('unload', this.onUnload.bind(this));
 
 		this.deviceManagement = new dmNetTools(this);
+
+		this.arpScanInstalled = false;
 	}
 
 	/**
@@ -53,15 +54,17 @@ class NetTools extends utils.Adapter {
 	 */
 	async onReady() {
 		this.asTools = new asTools(this);
-		//TODO: check on startup if IP addresses has changed. Look on the MAC list?
 		if (!this.config.licenseKey) {
 			this.log.error(
 				'License Key is not set! Enter a valid license key in the adapter settings.'
 			);
 		} else {
+
 			this.extendHostInformation();
 			await this.asTools.checkObjectsUpdate();
-			checkPingRights();
+			if(this.asTools.isLxc) {
+				checkPingRights();
+			}
 			this.config.pingInterval = parseInt(this.config.pingInterval, 10);
 
 			if (this.config.pingInterval < 5) {
@@ -75,7 +78,7 @@ class NetTools extends utils.Adapter {
 			if(this.config.autoSearch === true && this.config.searchSchedule !== ''){
 				this.log.info('Auto search is enabled');
 				const cronJob = new CronJob(this.config.searchSchedule, () => {
-					this.log.info('Start auto search');
+					this.log.debug('Start auto search');
                     this.discover();
                 });
                 cronJob.start();
@@ -315,46 +318,49 @@ class NetTools extends utils.Adapter {
 		try {
 			const ips = this.getIpRange();
 			const decimalSeparator = getDecimalSeparator();
-			let foundDevices = ['127.0.0.1'];
  			for(let ip in ips) {
-				 ping.probe(ips[ip], {timeout: parseFloat(`0${decimalSeparator}25`)}, async (error, result) => {
-					if (result.alive === true) {
-						result.mac = await arp.toMAC(result.host);
-						if(result.mac !== undefined && result.mac !== null){
-							result.vendor = oui(result.mac)
-						} else {
-							return;
-						}
-						try {
-							result.name = await nslookup(result.host);
-						} catch (error) {
-							result.name = result.host;
-						}
-						let exists = false;
+					ping.probe(ips[ip], {timeout: parseFloat(`0${decimalSeparator}25`), log: this.log.info}, async (error, result) => {
+						if (result.alive === true) {
+							result.mac = await arp.toMAC(result.host);
+							if (result.mac !== undefined && result.mac !== null) {
+								result.vendor = oui(result.mac)
+							} else {
+								return;
+							}
+							try {
+								result.name = await nslookup(result.host);
+							} catch (error) {
+								result.name = result.host;
+							}
+							let exists = false;
 
-						for (const entry of oldDevices) {
-							if (entry.native !== undefined && entry.native.mac === result.mac) {
-								exists = true;
+							for (const entry of oldDevices) {
+								if (entry.native !== undefined && entry.native.mac === result.mac) {
+									exists = true;
+								}
+								if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
+									const idName = result.mac.replace(/:/g, '');
+									await this.extendObjectAsync(this.namespace + '.' + idName, {
+										native: {
+											ip: result.host,
+											vendor: result.vendor
+										}
+									});
+								}
 							}
-							if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
-								const idName = result.mac.replace(/:/g, '');
-								await this.extendObjectAsync(this.namespace + '.' + idName, {
-									native: {
-										ip: result.host,
-										vendor: result.vendor
-									}
-								});
+							if (!exists) {
+								await this.addDevice(result.host, result.name, true, result.mac);
 							}
 						}
-						if (!exists) {
-							await this.addDevice(result.host, result.name, true, result.mac);
-						}
-					}
-				});
+					});
 			}
 
 			const preparedObjects = await this.prepareObjectsByConfig();
-			this.pingAll();
+			 try {
+				 this.pingAll();
+			 } catch (error){
+				 this.log.error('Ping all: ' + error.toString());
+			 }
 			return true;
 		} catch (err) {
 			this.log.warn('Discovery faild: ' + err);
