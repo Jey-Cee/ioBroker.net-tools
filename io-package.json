@@ -95,7 +95,11 @@
             "wake-on-lan",
             "port scan"
         ],
-        "licenseInformation": {"license": "CC-BY-NC-4.0", "type":  "paid"},
+        "licenseInformation": {
+            "license": "CC-BY-NC-4.0",
+            "type":  "paid",
+            "link": "https://creativecommons.org/licenses/by-nc/4.0/legalcode.en"
+        },
         "platform": "Javascript/Node.js",
         "main": "main.js",
         "icon": "net-tools.png",
