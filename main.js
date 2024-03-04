@@ -26,6 +26,7 @@ let wolTimer = null;
 let discoverTimeout = null;
 let pingTimeout = null;
 let taskList = [];
+let cronJob = null;
 
 const FORBIDDEN_CHARS = /[\]\[*,;'"`<>\\?]/g;
 
@@ -77,7 +78,7 @@ class NetTools extends utils.Adapter {
 
 			if(this.config.autoSearch === true && this.config.searchSchedule !== ''){
 				this.log.info('Auto search is enabled');
-				const cronJob = new CronJob(this.config.searchSchedule, () => {
+				cronJob = new CronJob(this.config.searchSchedule, () => {
 					this.log.debug('Start auto search');
                     this.discover();
                 });
@@ -113,6 +114,9 @@ class NetTools extends utils.Adapter {
 				pingTimeout = null;
 			}
 			isStopping = true;
+			if(cronJob){
+				cronJob.stop();
+			}
 
 			callback();
 		} catch (e) {
