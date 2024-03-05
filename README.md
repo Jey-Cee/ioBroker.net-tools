@@ -76,6 +76,9 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	### **WORK IN PROGRESS**
 -->
 
+### 1.0.6 04.03.2024
+* (Jey Cee) Reduce system load during discovery process to prevent adapter crash
+
 ### 1.0.5 04.02.2024
 * (Jey Cee) remove discovery adapter as dependency
 * (Jey Cee) add possibility to choose the interface which will be used for ping operations

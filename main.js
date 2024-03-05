@@ -25,6 +25,25 @@ let wolTries = 3;
 let wolTimer = null;
 let discoverTimeout = null;
 let pingTimeout = null;
+/**
+ * @type {Array.<Object>}
+ *
+ * Represents a list of tasks to be executed.
+ *
+ * Each element in the taskList array is an object with specific properties. It looks like:
+ * ```
+ * {
+ *     host: '192.168.11.15', // IP of the host
+ *     extendedInfo: true, // Indicates if extended information should be obtained
+ *     pingInterval: 60, // Time interval in seconds between two consecutive pings
+ *     retries: 0, // The number of retries already made
+ *     retryCounter: 0, // Used to count the number of retries
+ *     stateAlive: { channel: '84b8b87e0294', state: 'alive' }, // Information about the 'alive' state
+ *     stateTime: { channel: '84b8b87e0294', state: 'time' }, // Information about 'time' state
+ *     stateRps: { channel: '84b8b87e0294', state: 'rps' } // Information about 'rps' state
+ * }
+ * ```
+ */
 let taskList = [];
 let cronJob = null;
 
@@ -42,7 +61,7 @@ class NetTools extends utils.Adapter {
 		});
 		this.on('ready', this.onReady.bind(this));
 		this.on('stateChange', this.onStateChange.bind(this));
-		// this.on('objectChange', this.onObjectChange.bind(this));
+		this.on('objectChange', this.onObjectChange.bind(this));
 		this.on('message', this.onMessage.bind(this));
 		this.on('unload', this.onUnload.bind(this));
 
@@ -89,6 +108,8 @@ class NetTools extends utils.Adapter {
 			this.subscribeStates('*discover');
 			this.subscribeStates('*wol');
 			this.subscribeStates('*scan');
+			this.subscribeObjects('*');
+
 		}
 	}
 
@@ -127,20 +148,29 @@ class NetTools extends utils.Adapter {
 
 	// If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
 	// You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-	// /**
-	//  * Is called if a subscribed object changes
-	//  * @param {string} id
-	//  * @param {ioBroker.Object | null | undefined} obj
-	//  */
-	// onObjectChange(id, obj) {
-	// 	if (obj) {
-	// 		// The object was changed
-	// 		this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-	// 	} else {
-	// 		// The object was deleted
-	// 		this.log.info(`object ${id} deleted`);
-	// 	}
-	// }
+	/**
+	 * Is called if a subscribed object changes
+	 * @param {string} id
+	 * @param {ioBroker.Object | null | undefined} obj
+	 */
+	onObjectChange(id, obj) {
+		if (obj) {
+			// The object was changed
+
+			if (obj.type === 'device') {
+				// Look if ther is a host entry in taskList for the ip
+				const hostEntry = taskList.find(entry => entry.host === obj.native.ip);
+                if (hostEntry) {
+                    hostEntry.pingInterval = obj.native.pingInterval;
+                    hostEntry.retries = obj.native.retries;
+                }
+				taskList = taskList.map(entry => entry.host === hostEntry.host ? hostEntry : entry);
+            }
+		} else {
+			// The object was deleted
+			//this.log.info(`object ${id} deleted`);
+		}
+	}
 
 	/**
 	 * Is called if a subscribed state changes
@@ -187,7 +217,7 @@ class NetTools extends utils.Adapter {
 			}
 		} else {
 			// The state was deleted
-			this.log.info(`state ${id} deleted`);
+			//this.log.info(`state ${id} deleted`);
 		}
 	}
 
@@ -332,6 +362,8 @@ class NetTools extends utils.Adapter {
 				}
 				await Promise.all(promises);
 			}
+			this.log.info('Discovery finished')
+			return true;
 		} catch (err) {
 			this.log.warn('Discovery faild: ' + err);
 			return false;
