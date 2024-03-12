@@ -99,6 +99,7 @@
             "wake-on-lan",
             "port scan"
         ],
+        "license": "CC-BY-NC-4.0",
         "licenseInformation": {
             "license": "CC-BY-NC-4.0",
             "type":  "paid",
