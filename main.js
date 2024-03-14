@@ -158,13 +158,16 @@ class NetTools extends utils.Adapter {
 			// The object was changed
 
 			if (obj.type === 'device') {
-				// Look if ther is a host entry in taskList for the ip
-				const hostEntry = taskList.find(entry => entry.host === obj.native.ip);
+				// Look if there is a host entry in taskList for the ip
+				const hostEntry = taskList.find(entry => entry?.host === obj.native.ip);
                 if (hostEntry) {
                     hostEntry.pingInterval = obj.native.pingInterval;
                     hostEntry.retries = obj.native.retries;
                 }
-				taskList = taskList.map(entry => entry.host === hostEntry.host ? hostEntry : entry);
+				taskList = taskList.filter((entry) => entry && (entry.host !== hostEntry?.host));
+				if (hostEntry) {
+					taskList.push(hostEntry);
+				}
             }
 		} else {
 			// The object was deleted
@@ -673,8 +676,10 @@ class NetTools extends utils.Adapter {
 			}
 
 			const config = this.prepareObjectsForHost(device);
+			if(config) {
+				taskList.push(config.ping_task);
+			}
 
-			taskList.push(config.ping_task);
 		});
 
 		return true;
