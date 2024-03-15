@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.6",
+        "version": "1.0.7",
         "news": {
+            "1.0.7": {
+                "en": "Fix adapter crash (#36)"
+            },
             "1.0.6": {
                 "en": "Reduce system load during discovery process to prevent adapter crash",
                 "de": "Systemlast verringert während des Discovery prozess, um einen Absturz des Adapters zu verhindern."
