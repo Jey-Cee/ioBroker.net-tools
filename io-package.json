@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.7",
+        "version": "1.0.8",
         "news": {
+            "1.0.8": {
+                "en": "Fix adapter crash (#36) \nNew hint on device settings dialog",
+                "de": "Adapter-Absturz behoben (#36) \nNeuer Hinweis im Geräteeinstellungsdialog"
+            },
             "1.0.7": {
                 "en": "Fix adapter crash (#36)"
             },
