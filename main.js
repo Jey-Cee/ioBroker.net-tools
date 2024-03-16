@@ -33,6 +33,7 @@ let pingTimeout = null;
  * Each element in the taskList array is an object with specific properties. It looks like:
  * ```
  * {
+ * 	   mac: '00:80:41:ae:fd:7e' // The mac of the device
  *     host: '192.168.11.15', // IP of the host
  *     extendedInfo: true, // Indicates if extended information should be obtained
  *     pingInterval: 60, // Time interval in seconds between two consecutive pings
@@ -159,13 +160,11 @@ class NetTools extends utils.Adapter {
 
 			if (obj.type === 'device') {
 				// Look if there is a host entry in taskList for the ip
-				const hostEntry = taskList.find(entry => entry?.host === obj.native.ip);
+				const hostEntry = taskList.find(entry => entry?.mac === obj.native.mac);
                 if (hostEntry) {
+					hostEntry.host = obj.native.ip;
                     hostEntry.pingInterval = obj.native.pingInterval;
                     hostEntry.retries = obj.native.retries;
-                }
-				taskList = taskList.filter((entry) => entry && (entry.host !== hostEntry?.host));
-				if (hostEntry) {
 					taskList.push(hostEntry);
 				}
             }
@@ -530,7 +529,7 @@ class NetTools extends utils.Adapter {
 					continue;
 				}
 				if(taskList[i].stateAlive.channel === name){
-					taskList.splice(parseInt(i), 1, null);
+					taskList.splice(parseInt(i), 1);
 				}
 			}
 
@@ -630,7 +629,7 @@ class NetTools extends utils.Adapter {
 	/**
 	 * Prepare objects for host
 	 * @param {object} config - config object
-	 * @return {{ping_task: {stateTime: {channel: (string|*), state: string}, stateRps: {channel: (string|*), state: string}, host: *, extendedInfo: boolean, pingInterval: number, retries: number, retryCounter: number, stateAlive: {channel: (string|*), state: string}}}}
+	 * @return {{ping_task: {stateTime: {channel: (string|*), state: string}, stateRps: {channel: (string|*), state: string}, mac: string, host: string, extendedInfo: boolean, pingInterval: number, retries: number, retryCounter: number, stateAlive: {channel: (string|*), state: string}}}}
 	 */
 	prepareObjectsForHost(config) {
 		const host = config.ip;
@@ -643,6 +642,7 @@ class NetTools extends utils.Adapter {
 
 		return {
 			ping_task: {
+				mac: mac,
 				host: host,
 				extendedInfo: true,
 				pingInterval: config.pingInterval ? config.pingInterval : this.config.pingInterval,
