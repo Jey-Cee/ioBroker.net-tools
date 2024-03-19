@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.8",
+        "version": "1.0.9",
         "news": {
+            "1.0.9": {
+                "en": "Fix unexpected stop of discovery",
+                "de": "Unerwartetes Anhalten der Suche behoben"
+            },
             "1.0.8": {
                 "en": "Fix adapter crash (#36) \nNew hint on device settings dialog",
                 "de": "Adapter-Absturz behoben (#36) \nNeuer Hinweis im Geräteeinstellungsdialog"
