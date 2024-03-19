@@ -18,6 +18,7 @@ const { nslookup } = require('./lib/nslookup');
 const { CronJob } = require('cron');
 const { checkPingRights } = require('./lib/utils');
 const { calculateSubnetMask } = require('./lib/ip-calculator');
+const {error} = require("@iobroker/adapter-dev/build/util");
 
 let timer      = null;
 let isStopping = false;
@@ -355,15 +356,16 @@ class NetTools extends utils.Adapter {
 		try {
 			const ips = this.getIpRange();
 			const decimalSeparator = getDecimalSeparator();
-			const promises = [];
 			for (let i = 0; i < ips.length; i += 10){
+				const promises = [];
 				for(let j = 0; j < 10; j++) {
 					if (i + j < ips.length) {
 						promises.push(this.handleDiscoveryProbe(ips[i+j], oldDevices, decimalSeparator));
 					}
 				}
-				await Promise.all(promises);
+				const result = await Promise.all(promises);
 			}
+
 			this.log.info('Discovery finished')
 			return true;
 		} catch (err) {
@@ -373,42 +375,55 @@ class NetTools extends utils.Adapter {
 	}
 
 	async handleDiscoveryProbe(ip, oldDevices, decimalSeparator){
-		return new Promise(async (resolve) => {
-			ping.probe(ip, {timeout: parseFloat(`0${decimalSeparator}25`), log: this.log.info}, async (error, result) => {
-				if (result.alive === true) {
-					result.mac = await arp.toMAC(result.host);
-					if (result.mac !== undefined && result.mac !== null) {
-						result.vendor = oui(result.mac)
-					} else {
-						return;
+		return new Promise(async (resolve, reject) => {
+			try {
+				ping.probe(ip, {
+					timeout: parseFloat(`0${decimalSeparator}25`),
+					log: this.log.info
+				}, async (error, result) => {
+					if(error) {
+						reject(false);
 					}
-					try {
-						result.name = await nslookup(result.host);
-					} catch (error) {
-						result.name = result.host;
-					}
-					let exists = false;
+					if (result.alive === true) {
+						result.mac = await arp.toMAC(result.host);
+						if (result.mac !== undefined && result.mac !== null) {
+							result.vendor = oui(result.mac)
+						} else {
+							this.log.info('Can not get mac for ' + result.host + '. Going to next IP.')
+							resolve(false);
+						}
+						try {
+							result.name = await nslookup(result.host);
+						} catch (error) {
+							result.name = result.host;
+						}
+						let exists = false;
 
-					for (const entry of oldDevices) {
-						if (entry.native !== undefined && entry.native.mac === result.mac) {
-							exists = true;
+						for (const entry of oldDevices) {
+							if (entry.native !== undefined && entry.native.mac === result.mac) {
+								exists = true;
+							}
+							if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
+								const idName = result.mac.replace(/:/g, '');
+								await this.extendObjectAsync(this.namespace + '.' + idName, {
+									native: {
+										ip: result.host,
+										vendor: result.vendor
+									}
+								});
+							}
 						}
-						if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
-							const idName = result.mac.replace(/:/g, '');
-							await this.extendObjectAsync(this.namespace + '.' + idName, {
-								native: {
-									ip: result.host,
-									vendor: result.vendor
-								}
-							});
+						if (!exists) {
+							await this.addDevice(result.host, result.name, true, result.mac);
 						}
 					}
-					if (!exists) {
-						await this.addDevice(result.host, result.name, true, result.mac);
-					}
-				}
-				resolve(true);
-			});
+					resolve(true);
+				});
+
+			} catch (error){
+				this.log.warn('Error in handleDiscoveryProbe: ' + error);
+				reject(false);
+			}
 		})
 	}
 
