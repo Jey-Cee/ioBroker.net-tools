@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.9",
+        "version": "1.0.10",
         "news": {
             "1.0.9": {
                 "en": "Fix unexpected stop of discovery",

@@ -18,7 +18,7 @@ const { nslookup } = require('./lib/nslookup');
 const { CronJob } = require('cron');
 const { checkPingRights } = require('./lib/utils');
 const { calculateSubnetMask } = require('./lib/ip-calculator');
-const {error} = require("@iobroker/adapter-dev/build/util");
+
 
 let timer      = null;
 let isStopping = false;
