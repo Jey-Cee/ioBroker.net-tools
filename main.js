@@ -19,7 +19,6 @@ const { CronJob } = require('cron');
 const { checkPingRights } = require('./lib/utils');
 const { calculateSubnetMask } = require('./lib/ip-calculator');
 
-
 let timer      = null;
 let isStopping = false;
 let wolTries = 3;
@@ -351,18 +350,33 @@ class NetTools extends utils.Adapter {
 	}
 
 	async discover(){
-		const oldDevices = await this.getDevicesAsync();
+		let oldDevices = await this.getDevicesAsync();
+		let devices = [];
+		for(let device in oldDevices){
+			let newDevice = {mac: '', ip: ''};
+			if(oldDevices[device].native?.mac) {
+				newDevice.mac = oldDevices[device].native.mac;
+			}
+			if(oldDevices[device].native?.ip) {
+				newDevice.ip = oldDevices[device].native.ip;
+			}
+			devices.push(newDevice);
+		}
+
+		oldDevices = [];
 
 		try {
 			const ips = this.getIpRange();
 			const decimalSeparator = getDecimalSeparator();
+
 			for (let i = 0; i < ips.length; i += 10){
-				const promises = [];
+				let promises = [];
 				for(let j = 0; j < 10; j++) {
 					if (i + j < ips.length) {
-						promises.push(this.handleDiscoveryProbe(ips[i+j], oldDevices, decimalSeparator));
+						promises.push(this.handleDiscoveryProbe(ips[i+j], devices, decimalSeparator));
 					}
 				}
+
 				const result = await Promise.all(promises);
 			}
 
@@ -390,7 +404,7 @@ class NetTools extends utils.Adapter {
 							result.vendor = oui(result.mac)
 						} else {
 							this.log.info('Can not get mac for ' + result.host + '. Going to next IP.')
-							resolve(false);
+							resolve(true);
 						}
 						try {
 							result.name = await nslookup(result.host);
@@ -400,10 +414,10 @@ class NetTools extends utils.Adapter {
 						let exists = false;
 
 						for (const entry of oldDevices) {
-							if (entry.native !== undefined && entry.native.mac === result.mac) {
+							if (entry.mac !== '' && entry.mac !== undefined && entry.mac === result.mac) {
 								exists = true;
 							}
-							if (exists === true && entry.native !== undefined && entry.native.ip !== result.host) {
+							if (exists === true && entry.ip !== '' && entry.ip !== undefined && entry.ip !== result.host && entry.mac === result.mac) {
 								const idName = result.mac.replace(/:/g, '');
 								await this.extendObjectAsync(this.namespace + '.' + idName, {
 									native: {
@@ -413,6 +427,8 @@ class NetTools extends utils.Adapter {
 								});
 							}
 						}
+
+
 						if (!exists) {
 							await this.addDevice(result.host, result.name, true, result.mac);
 						}
@@ -713,6 +729,7 @@ function getDecimalSeparator() {
 	const numberWithDecimalSeparator = 1.1;
 	return Intl.NumberFormat().format(numberWithDecimalSeparator).substring(1, 2);
 }
+
 
 if (require.main !== module) {
 	// Export the constructor in compact mode
