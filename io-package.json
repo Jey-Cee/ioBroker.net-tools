@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "net-tools",
-        "version": "1.0.10",
+        "version": "1.0.11",
         "news": {
+            "1.0.11": {
+                "en": "Fix high CPU load while running discovering devices",
+                "de": "Behebung der hohen CPU-Last bei der Erkennung von Geräten "
+            },
             "1.0.9": {
                 "en": "Fix unexpected stop of discovery",
                 "de": "Unerwartetes Anhalten der Suche behoben"
