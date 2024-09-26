@@ -6,52 +6,6 @@
             "1.0.11": {
                 "en": "Fix high CPU load while running discovering devices",
                 "de": "Behebung der hohen CPU-Last bei der Erkennung von Geräten "
-            },
-            "1.0.9": {
-                "en": "Fix unexpected stop of discovery",
-                "de": "Unerwartetes Anhalten der Suche behoben"
-            },
-            "1.0.8": {
-                "en": "Fix adapter crash (#36) \nNew hint on device settings dialog",
-                "de": "Adapter-Absturz behoben (#36) \nNeuer Hinweis im Geräteeinstellungsdialog"
-            },
-            "1.0.7": {
-                "en": "Fix adapter crash (#36)"
-            },
-            "1.0.6": {
-                "en": "Reduce system load during discovery process to prevent adapter crash",
-                "de": "Systemlast verringert während des Discovery prozess, um einen Absturz des Adapters zu verhindern."
-            },
-            "1.0.5": {
-                "en": "remove discovery adapter as dependency \nadd possibility to choose the interface which will be used for ping operations \nadd possibility to enter IP range for device discovery \nadd auto search by configurable schedule \nfix/catch crash if device was deleted in objects and not in device management \nfix ping rights on lxc containers which prevent to ping devices",
-                "de": "Discovery-Adapter als Abhängigkeit entfernen \nMöglichkeit hinzufügen, die Schnittstelle zu wählen, die für Ping-Operationen verwendet werden soll \nHinzufügen der Möglichkeit, einen IP-Bereich für die Geräteerkennung einzugeben \nautomatische Suche nach konfigurierbarem Zeitplan hinzufügen \nBehebung eines Absturzes, wenn ein Gerät in Objekten und nicht in der Geräteverwaltung gelöscht wurde \nPing-Rechte auf lxc-Containern beheben, die das Anpingen von Geräten verhindern"
-            },
-            "1.0.4": {
-                "en": "Fix some problems\n Update dependencies",
-                "de": "Einige probleme behoben\n Abhängigkeiten aktualisiert"
-            },
-            "1.0.3": {
-                "en": "bugfix require"
-            },
-            "1.0.2": {
-                "en": "bugfix require"
-            },
-            "1.0.1": {
-                "en": "Device manager added to the configuration.\n BREAKING CHANGE: -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/ -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/",
-                "de": "Gerätemanager zur Konfiguration hinzugefügt.\n BREAKING CHANGE: Ab version 1.0.1 ist eine Lizenz erforderlich um den Adapter zu benutzen. -> https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/"
-            },
-            "1.0.0": {
-                "en": "Complete rewrite of the adapter",
-                "de": "Komplette Neuentwicklung des Adapters",
-                "ru": "Полная переработка адаптера",
-                "pt": "Reescrita completa do adaptador",
-                "nl": "Volledige herwerking van de adapter",
-                "fr": "Réécriture complète de l'adaptateur",
-                "it": "Riscrittura completa dell'adattatore",
-                "es": "Reescritura completa del adaptador",
-                "pl": "Całkowicie nowa wersja adaptera",
-                "uk": "Повна переробка адаптера",
-                "zh-cn": "适配器的完全重写"
             }
         },
         "messages": [
@@ -120,7 +74,6 @@
             "link": "https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/"
         },
         "platform": "Javascript/Node.js",
-        "main": "main.js",
         "icon": "net-tools.png",
         "enabled": true,
         "extIcon": "https://raw.githubusercontent.com/Jey-Cee/ioBroker.net-tools/master/admin/net-tools.png",

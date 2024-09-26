@@ -230,6 +230,7 @@ class NetTools extends utils.Adapter {
 	//  * @param {ioBroker.Message} obj
 	//  */
 	async onMessage(obj) {
+		this.log.debug('Message received: ' + JSON.stringify(obj));
 		if (typeof obj === 'object' && obj.message && !obj.command.includes('dm:')) {
 			if (obj.command === 'send') {
 				switch (obj.command) {
