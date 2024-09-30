@@ -77,11 +77,22 @@ class NetTools extends utils.Adapter {
 	async onReady() {
 		this.asTools = new asTools(this);
 		if (!this.config.licenseKey) {
-			this.log.error(
-				'License Key is not set! Enter a valid license key in the adapter settings.'
-			);
+			const adapterObject = await this.getForeignObjectAsync(`system.adapter.net-tools`);
+			if (adapterObject && adapterObject.native && adapterObject.native.licenseKey === '') {
+				this.log.error(
+					'License Key is not set! Enter a valid license key in the adapter settings.'
+				);
+			} else if (adapterObject && adapterObject.native && adapterObject.native.licenseKey){
+				await this.extendForeignObjectAsync(`system.adapter.net-tools.${this.instance}`, {native: {
+					licenseKey: adapterObject.native.licenseKey,
+					}
+				});
+			}
 		} else {
-
+			const adapterObject = await this.getForeignObjectAsync(`system.adapter.net-tools`);
+			if (adapterObject && adapterObject.native && adapterObject.native.licenseKey !== this.config.licenseKey) {
+                await this.extendForeignObjectAsync(`system.adapter.net-tools`, {native: {licenseKey: this.config.licenseKey}});
+            }
 			this.extendHostInformation();
 			await this.asTools.checkObjectsUpdate();
 			if(this.asTools.isLxc) {

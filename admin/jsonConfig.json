@@ -8,7 +8,10 @@
 			"items": {
 				"licenseKey": {
 					"type": "text",
-					"label": "License Key",
+					"label": {
+						"en": "License Key",
+						"de": "Lizenzschlüssel"
+					},
 					"trim": true,
 					"help": {
 						"en": "Enter your license key here. You can buy one in the ALL SMART shop.",
