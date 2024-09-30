@@ -4,5 +4,13 @@
     "Port Scan": "Port-Scan für localhost beim Start ausführen",
 	"Port List": "Liste der zu scannenden Ports",
     "Settings": "Einstellungen",
-    "Devices": "Geräte"
+    "Devices": "Geräte",
+    "License Key": "Lizenzschlüssel",
+    "License Key Help": "Geben Sie hier Ihren Lizenzschlüssel ein. Sie können einen im ALL SMART Shop kaufen.",
+    "interfaceSelectInfo": "Wählen Sie die Schnittstelle aus, die für die Suche nach Geräten verwendet werden soll.",
+    "startIp": "Start IP Adresse",
+    "endIp": "Letzte IP Adresse",
+    "descriptionIpRange": "Falls kein benutzerdefinierter IP Bereich angeben wird, wird dieser von Net Tools anhand der Schnittstellenkonfiguration ermittelt.<br>Wenn der IP Bereich aus der Schnittstellenkonfiguration übernommen wird, kann der Scanvorgang sehr viel Zeit in Anspruch nehmen.",
+    "autoSearch": "Automatische Erkennung von Geräten",
+    "searchSchedule": "Zeitplan für die Suche"
 }

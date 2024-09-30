@@ -4,5 +4,14 @@
 	"Port Scan": "Run port scan for localhost on start",
 	"Port List": "List of ports to scan",
 	"Settings": "Settings",
-	"Devices": "Devices"
+	"Devices": "Devices",
+	"License Key": "License Key",
+	"License Key Help": "Enter your license key here. You can buy one in the ALL SMART shop.",
+	"interfaceSelectInfo": "Select the interface which will be used to scan for devices.",
+	"startIp": "Start IP address",
+	"endIp": "End IP address",
+	"descriptionIpRange": "If you do not enter a custom IP range Net Tools will determine it by interface configuration.<br>If the IP range is taken from interface configuration the scan process can take a long time to finish.",
+	"autoSearch": "Auto discover devices",
+	"searchSchedule": "Time schedule for the search"
+
 }

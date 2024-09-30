@@ -8,15 +8,9 @@
 			"items": {
 				"licenseKey": {
 					"type": "text",
-					"label": {
-						"en": "License Key",
-						"de": "Lizenzschlüssel"
-					},
+					"label": "License Key",
 					"trim": true,
-					"help": {
-						"en": "Enter your license key here. You can buy one in the ALL SMART shop.",
-						"de": "Geben Sie hier Ihren Lizenzschlüssel ein. Sie können einen im ALL SMART Shop kaufen."
-					},
+					"help": "License Key Help",
 					"helpLink": "https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/",
 					"xl": 12,
 					"lg": 12,
@@ -29,10 +23,7 @@
 				},
 				"interfaceSelectInfo": {
 					"type": "staticText",
-					"text": {
-						"en": "Select the interface which will be used to scan for devices.",
-						"de": "Wählen Sie die Schnittstelle aus, die für die Suche nach Geräten verwendet werden soll."
-					},
+					"text": "interfaceSelectInfo",
 					"newLine": true
 				},
 				"interface": {
@@ -48,10 +39,7 @@
 				},
 				"startIp": {
 					"type": "text",
-					"label": {
-						"en": "Start IP address",
-						"de": "Start IP Adresse"
-					},
+					"label": "startIp",
 					"trim": true,
 					"placeholder": "192.168.0.1",
 					"xl": 2,
@@ -63,10 +51,7 @@
 				},
 				"endIp": {
 					"type": "text",
-					"label": {
-						"en": "End IP address",
-						"de": "Letzte IP Adresse"
-					},
+					"label": "endIp",
 					"trim": true,
 					"placeholder": "192.168.0.254",
 					"xl": 2,
@@ -77,27 +62,18 @@
 				},
 				"descriptionIpRange": {
 					"type": "staticText",
-					"text": {
-						"en": "If you do not enter a custom IP range Net Tools will determine it by interface configuration.<br>If the IP range is taken from interface configuration the scan process can take a long time to finish.",
-						"de": "Falls kein benutzerdefinierter IP Bereich angeben wird, wird dieser von Net Tools anhand der Schnittstellenkonfiguration ermittelt.<br>Wenn der IP Bereich aus der Schnittstellenkonfiguration übernommen wird, kann der Scanvorgang sehr viel Zeit in Anspruch nehmen."
-					},
+					"text": "descriptionIpRange",
 					"newLine": true
 				},
 				"autoSearch": {
 					"type": "checkbox",
-					"label": {
-						"en": "Auto discover devices",
-						"de": "Automatische Erkennung von Geräten"
-					},
+					"label": "autoSearch",
 					"newLine": true
 				},
 				"searchSchedule": {
 					"type": "cron",
 					"complex": true,
-					"label": {
-						"en": "Time schedule for the search",
-						"de": "Zeitplan für die Suche"
-					},
+					"label": "searchSchedule",
 					"xl": 3,
 					"lg": 3,
 					"md": 5,
