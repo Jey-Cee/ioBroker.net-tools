@@ -42,6 +42,7 @@ let pingTimeout = null;
  *     stateAlive: { channel: '84b8b87e0294', state: 'alive' }, // Information about the 'alive' state
  *     stateTime: { channel: '84b8b87e0294', state: 'time' }, // Information about 'time' state
  *     stateRps: { channel: '84b8b87e0294', state: 'rps' } // Information about 'rps' state
+ *     wakeWithIp: false // boolean per device
  * }
  * ```
  */
@@ -201,7 +202,7 @@ class NetTools extends utils.Adapter {
 					}
 					break;
 				case 'wol':
-					if (state.val) {
+					if (state.val && state.ack === false) {
 						const parentId = await this.getParentId(id);
 						const obj = await this.getObjectAsync(parentId);
 						if(obj === null || obj === undefined){
@@ -209,6 +210,7 @@ class NetTools extends utils.Adapter {
 							return;
 						}
 						this.wake(obj.native.mac);
+						this.setState(id, {val: state.val, ack: true});
 					}
 					break;
 				case 'scan':
@@ -344,7 +346,9 @@ class NetTools extends utils.Adapter {
 	}
 
 	wake(mac){
-		wol.wake(mac, (err, res) => {
+		const device = taskList.find(entry => entry.mac === mac);
+		console.log(device);
+		wol.wake(mac, device?.wakeWithIp ? {address: device.ip}: null, (err, res) => {
 			wolTries = wolTries - 1;
 			if (err) {
 				this.log.debug('Wake-on-LAN error: ' + err);
@@ -375,9 +379,6 @@ class NetTools extends utils.Adapter {
 			// Check if device is on ignore list, if not add it to array
 
 			const ignore = await this.checkIgnore(newDevice.mac);
-			console.log(ignore);
-			console.log(this.config.ignoreListTable);
-			console.log(newDevice.mac);
 			if(!ignore) devices.push(newDevice);
 		}
 
@@ -451,9 +452,6 @@ class NetTools extends utils.Adapter {
 						}
 
 						const ignore = await this.checkIgnore(result.mac);
-						console.log(ignore);
-						console.log(this.config.ignoreListTable);
-						console.log(result.mac);
 						if (!exists && !ignore) {
 							await this.addDevice(result.host, result.name, true, result.mac);
 						}
@@ -554,6 +552,7 @@ class NetTools extends utils.Adapter {
 				enabled: enabled,
 				pingInterval: pingInterval ? pingInterval : this.config.pingInterval,
 				retries: retries ? retries : 0,
+				wakeWithIp: false,
 				ip: ip,
 				mac: mac,
 				vendor: vendor
@@ -618,7 +617,7 @@ class NetTools extends utils.Adapter {
 				this.log.info(`Delete device ${mac}`);
 				await this.delDevice(mac);
 			} else {
-				await this.extendObjectAsync(`${this.namespace}.${mac}`, {
+				await this.extendObject(`${this.namespace}.${mac}`, {
 					common: {
 						name: devices[i].name
 					},
@@ -685,7 +684,7 @@ class NetTools extends utils.Adapter {
 	/**
 	 * Prepare objects for host
 	 * @param {object} config - config object
-	 * @return {{ping_task: {stateTime: {channel: (string|*), state: string}, stateRps: {channel: (string|*), state: string}, mac: string, host: string, extendedInfo: boolean, pingInterval: number, retries: number, retryCounter: number, stateAlive: {channel: (string|*), state: string}}}}
+	 * @return {{ping_task: {stateTime: {channel: (string|*), state: string}, stateRps: {channel: (string|*), state: string}, mac: string, host: string, extendedInfo: boolean, pingInterval: number, retries: number, retryCounter: number, wakeWithIp: boolean, stateAlive: {channel: (string|*), state: string}}}}
 	 */
 	prepareObjectsForHost(config) {
 		const host = config.ip;
@@ -704,6 +703,7 @@ class NetTools extends utils.Adapter {
 				pingInterval: config.pingInterval ? config.pingInterval : this.config.pingInterval,
 				retries: config.retries ? config.retries : 0,
 				retryCounter: 0,
+				wakeWithIp: config.wakeWithIp ? config.wakeWithIp : false,
 				stateAlive: stateAliveID,
 				stateTime: stateTimeID,
 				stateRps: stateRpsID
