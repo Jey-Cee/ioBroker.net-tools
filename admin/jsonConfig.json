@@ -136,6 +136,40 @@
 				"height": "100%",
 				"overflow": "hidden"
 			}
+		},
+		"ignoreList": {
+			"type": "panel",
+			"label": "Ignore List",
+			"items": {
+				"helpIgnoreList": {
+					"type": "staticText",
+					"text": "ignore list text"
+				},
+				"ignoreListTable": {
+					"type": "table",
+					"items": [
+						{
+							"type": "text",
+							"title": "MAC",
+							"attr": "mac",
+							"filter": true,
+							"sort": true,
+							"default": ""
+						},
+						{
+							"type": "text",
+							"title": {
+								"en": "Comment",
+								"de": "Kommentar"
+							},
+							"attr": "comment",
+							"filter": true,
+							"sort": true,
+							"default": ""
+						}
+					]
+				}
+			}
 		}
 	}
 }

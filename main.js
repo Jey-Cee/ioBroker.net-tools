@@ -372,7 +372,13 @@ class NetTools extends utils.Adapter {
 			if(oldDevices[device].native?.ip) {
 				newDevice.ip = oldDevices[device].native.ip;
 			}
-			devices.push(newDevice);
+			// Check if device is on ignore list, if not add it to array
+
+			const ignore = await this.checkIgnore(newDevice.mac);
+			console.log(ignore);
+			console.log(this.config.ignoreListTable);
+			console.log(newDevice.mac);
+			if(!ignore) devices.push(newDevice);
 		}
 
 		oldDevices = [];
@@ -398,6 +404,10 @@ class NetTools extends utils.Adapter {
 			this.log.warn('Discovery faild: ' + err);
 			return false;
 		}
+	}
+
+	async checkIgnore(mac){
+		return this.config.ignoreListTable.find((/** @type {{ mac: string; }} */ entry) => entry.mac === mac);
 	}
 
 	async handleDiscoveryProbe(ip, oldDevices, decimalSeparator){
@@ -431,7 +441,7 @@ class NetTools extends utils.Adapter {
 							}
 							if (exists === true && entry.ip !== '' && entry.ip !== undefined && entry.ip !== result.host && entry.mac === result.mac) {
 								const idName = result.mac.replace(/:/g, '');
-								await this.extendObjectAsync(this.namespace + '.' + idName, {
+								await this.extendObject(this.namespace + '.' + idName, {
 									native: {
 										ip: result.host,
 										vendor: result.vendor
@@ -440,8 +450,11 @@ class NetTools extends utils.Adapter {
 							}
 						}
 
-
-						if (!exists) {
+						const ignore = await this.checkIgnore(result.mac);
+						console.log(ignore);
+						console.log(this.config.ignoreListTable);
+						console.log(result.mac);
+						if (!exists && !ignore) {
 							await this.addDevice(result.host, result.name, true, result.mac);
 						}
 					}
@@ -532,7 +545,7 @@ class NetTools extends utils.Adapter {
 
 
 
-		await this.extendObjectAsync(this.namespace + '.' + idName, {
+		await this.extendObject(this.namespace + '.' + idName, {
 			type: 'device',
 			common: {
 				name: name || ip
@@ -548,7 +561,7 @@ class NetTools extends utils.Adapter {
 		});
 
 		for (const obj in objects){
-			await this.extendObjectAsync(idName + '.' + obj, objects[obj]);
+			await this.extendObject(idName + '.' + obj, objects[obj]);
 		}
 
 

@@ -12,6 +12,6 @@
 	"endIp": "End IP address",
 	"descriptionIpRange": "If you do not enter a custom IP range Net Tools will determine it by interface configuration.<br>If the IP range is taken from interface configuration the scan process can take a long time to finish.",
 	"autoSearch": "Auto discover devices",
-	"searchSchedule": "Time schedule for the search"
-
+	"searchSchedule": "Time schedule for the search",
+	"ignore list text": "Note: Every MAC address on this list will be ignored on autodiscovery."
 }
