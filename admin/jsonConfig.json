@@ -24,7 +24,12 @@
 				"interfaceSelectInfo": {
 					"type": "staticText",
 					"text": "interfaceSelectInfo",
-					"newLine": true
+					"newLine": true,
+					"xl": 3,
+					"lg": 4,
+					"md": 5,
+					"sm": 12,
+					"xs": 12
 				},
 				"interface": {
 					"type": "interface",
@@ -63,11 +68,21 @@
 				"descriptionIpRange": {
 					"type": "staticText",
 					"text": "descriptionIpRange",
+					"xl": 3,
+					"lg": 4,
+					"md": 5,
+					"sm": 6,
+					"xs": 12,
 					"newLine": true
 				},
 				"autoSearch": {
 					"type": "checkbox",
 					"label": "autoSearch",
+					"xl": 3,
+					"lg": 4,
+					"md": 5,
+					"sm": 6,
+					"xs": 12,
 					"newLine": true
 				},
 				"searchSchedule": {
@@ -78,7 +93,8 @@
 					"lg": 3,
 					"md": 5,
 					"sm": 6,
-					"xs": 12
+					"xs": 12,
+					"newLine": true
 				},
 				"pingInterval": {
 					"type": "number",
@@ -118,7 +134,11 @@
 			"items": {
 				"_dm": {
 					"type": "deviceManager",
+					"xl": 12,
+					"lg": 12,
+					"md": 12,
 					"sm": 12,
+					"xs": 12,
 					"style": {
 						"width": "100%",
 						"height": "100%",
@@ -143,7 +163,13 @@
 			"items": {
 				"helpIgnoreList": {
 					"type": "staticText",
-					"text": "ignore list text"
+					"text": "ignore list text",
+					"xl": 3,
+					"lg": 4,
+					"md": 5,
+					"sm": 6,
+					"xs": 12,
+					"newLine": true
 				},
 				"ignoreListTable": {
 					"type": "table",

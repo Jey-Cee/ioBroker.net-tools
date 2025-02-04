@@ -13,5 +13,6 @@
     "descriptionIpRange": "Falls kein benutzerdefinierter IP Bereich angeben wird, wird dieser von Net Tools anhand der Schnittstellenkonfiguration ermittelt.<br>Wenn der IP Bereich aus der Schnittstellenkonfiguration übernommen wird, kann der Scanvorgang sehr viel Zeit in Anspruch nehmen.",
     "autoSearch": "Automatische Erkennung von Geräten",
     "searchSchedule": "Zeitplan für die Suche",
-    "ignore list text": "Anmerkung: Jede MAC-Adresse in dieser Liste wird bei der automatischen Erkennung ignoriert."
+    "ignore list text": "Anmerkung: Jede MAC-Adresse in dieser Liste wird bei der automatischen Erkennung ignoriert.",
+    "justNotify": "Nur Benachrichtigungen für gefundene Geräte im Admin anzeigen."
 }

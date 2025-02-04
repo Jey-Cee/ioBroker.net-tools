@@ -334,7 +334,7 @@ class NetTools extends utils.Adapter {
 
 			scanner.run();
 		} else {
-			await this.setStateAsync(id + '.ports', {val: `Port scan aborted, device ${id} is not alive`, ack: true})
+			await this.setState(id + '.ports', {val: `Port scan aborted, device ${id} is not alive`, ack: true})
 			this.log.info(`Port scan aborted, device ${id} is not alive`);
 		}
 	}
@@ -450,7 +450,6 @@ class NetTools extends utils.Adapter {
 								});
 							}
 						}
-
 						const ignore = await this.checkIgnore(result.mac);
 						if (!exists && !ignore) {
 							await this.addDevice(result.host, result.name, true, result.mac);
