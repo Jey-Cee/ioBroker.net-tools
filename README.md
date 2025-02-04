@@ -75,8 +75,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.1.0 (2025-02-04)
 * (Jey Cee) New feature ignore list for autodiscovery
 * (Jey Cee) New feature Wake-on-LAN with IP for devices on other subnets
 * (Jey Cee) Optimize config for better responsive behavior
@@ -84,7 +83,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 * (Jey Cee) Moved translations from configuration interface to i18n files
 * (Jey Cee) Update dependencies
 * (Jey Cee) Fix some stuff that was mentoined by adapter checker
- 
+
 ### 1.0.11 27.03.2024
 * (Jey Cee) Fix high CPU load while running discovering devices
 
