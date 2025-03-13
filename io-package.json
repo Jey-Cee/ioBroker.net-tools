@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "news": {
+      "1.1.1": {
+        "en": "Fix \"Cannot read properties of undefined (reading 'find')\"",
+        "de": "Fehlerbehebung \"Cannot read properties of undefined (reading 'find')\"",
+        "ru": "Исправление «Невозможно прочитать свойства неопределенного (чтение «найти»)»",
+        "pt": "Corrigir \"Não é possível ler propriedades indefinidas (ler 'find')\"",
+        "nl": "Fix \"Kan eigenschappen van ongedefinieerde niet lezen\"",
+        "fr": "Correction \"Impossible de lire les propriétés de l'indéfini (lire 'find')\"",
+        "it": "Fissare \"Non leggere le proprietà di non definito (leggendo 'find')\"",
+        "es": "Arreglar \"No se pueden leer propiedades indefinidas (leer 'find')\"",
+        "pl": "Naprawiono \"Nie można odczytać właściwości niezdefiniowanych (czytanie 'find')\"",
+        "uk": "Фіксація \"Не можна прочитати властивості невизначеної (читання 'find')\"",
+        "zh-cn": "修正“ 无法读取未定义的属性( 读取“ find” ) "
+      },
       "1.1.0": {
         "en": "New feature ignore list for autodiscovery\nNew feature Wake-on-LAN with IP for devices on other subnets\nOptimize config for better responsive behavior\nSync license key on all instance configurations if a key was already entered in one instance configuration\nMoved translations from configuration interface to i18n files\nUpdate dependencies",
         "de": "Neues Feature ignorieren Liste für Autodiscovery\nNeue Funktion Wake-on-LAN mit IP für Geräte in anderen Subnetzen\nKonfiguration optimiert für Unterschiedliche Bildschirm größen\nLizenzschlüssel synchronisieren in allen Instanz-Konfigurationen, wenn ein Schlüssel bereits in einer Instanz-Konfiguration eingegeben wurde\nVerschieben von Übersetzungen von der Konfiguration nach i18n Dateien\nAbhängigkeiten aktualisiert",
