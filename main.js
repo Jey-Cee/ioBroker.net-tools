@@ -221,12 +221,13 @@ class NetTools extends utils.Adapter {
 							this.log.warn(`Object ${parentId} not found`);
 							return;
 						}
-						let ports = await this.getStateAsync(`${id}.portList`);
+						let ports = await this.getStateAsync(`${parentId}.portList`);
+						console.log(ports.val);
 						if (!ports) {
 							ports = this.config.portList;
 						}
 
-						this.portScan(parentId, obj.native.ip, ports);
+						this.portScan(parentId, obj.native.ip, ports.val);
 					}
 					break;
 			}
@@ -408,6 +409,9 @@ class NetTools extends utils.Adapter {
 	}
 
 	async checkIgnore(mac){
+		if(!this.config.ignoreListTable) {
+			return false;
+		}
 		return this.config.ignoreListTable.find((/** @type {{ mac: string; }} */ entry) => entry.mac === mac);
 	}
 
