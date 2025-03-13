@@ -75,6 +75,10 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (Jey Cee) Fix "Cannot read properties of undefined (reading 'find')"
+
 ### 1.1.0 (2025-02-04)
 * (Jey Cee) New feature ignore list for autodiscovery
 * (Jey Cee) New feature Wake-on-LAN with IP for devices on other subnets
