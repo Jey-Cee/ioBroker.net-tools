@@ -109,7 +109,7 @@
 				"portScan": {
 					"type": "checkbox",
 					"label": "Port Scan",
-					"xl": 5,
+					"xl": 2,
 					"lg": 2,
 					"md": 3,
 					"sm": 4,
@@ -193,7 +193,12 @@
 							"sort": true,
 							"default": ""
 						}
-					]
+					],
+					"xl": 12,
+					"lg": 12,
+					"md": 12,
+					"sm": 12,
+					"xs": 12
 				}
 			}
 		}
