@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "news": {
+      "1.1.2": {
+        "en": "Add meta object object for instance to store device pictures from device manager\nFix repository checker errors \n",
+        "de": "Fügen Sie zum Beispiel Meta-Objekt-Objekt hinzu, um Gerätebilder vom Gerätemanager zu speichern\nRepository-Checker-Fehler behoben\n",
+        "ru": "Добавление метаобъекта, например, для хранения изображений устройства из диспетчера устройств\nИсправьте ошибки проверки репозитория\n",
+        "pt": "Adicione meta objeto por exemplo para armazenar imagens de dispositivos do gerenciador de dispositivos\nCorrigir erros de verificação de repositório\n",
+        "nl": "Voeg meta object object bijvoorbeeld toe om apparaatafbeeldingen van apparaatbeheerder op te slaan\nFix repository checker fouten\n",
+        "fr": "Ajouter l'objet meta par exemple pour stocker des images de périphérique depuis le gestionnaire de périphérique\nCorrection des erreurs de contrôle du dépôt\n",
+        "it": "Aggiungi oggetto meta per esempio per memorizzare le immagini del dispositivo dal gestore del dispositivo\nRisolvi gli errori di controllo del repository\n",
+        "es": "Añadir objeto meta por ejemplo para almacenar imágenes de dispositivo desde el administrador del dispositivo\nErrores de comprobación de repositorios fijos\n",
+        "pl": "Dodaj obiekt meta na przykład do przechowywania obrazów urządzeń od menedżera urządzeń\nPopraw błędy sprawdzania repozytorium\n",
+        "uk": "Додати об'єкт мета-об'єкта для зберігання зображень пристроїв від диспетчера пристроїв\nВиправлення помилок репозиторій\n",
+        "zh-cn": "添加元对象, 例如存储设备管理器中的设备图片\n修复仓库检查器错误\n"
+      },
       "1.1.1": {
         "en": "Fix \"Cannot read properties of undefined (reading 'find')\"",
         "de": "Fehlerbehebung \"Cannot read properties of undefined (reading 'find')\"",
