@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "news": {
+      "1.1.3": {
+        "en": "Fix out of memory while scanning",
+        "de": "Fix aus dem Speicher beim Scannen",
+        "ru": "Исправить память при сканировании",
+        "pt": "Corrigir fora da memória durante a digitalização",
+        "nl": "Fix uit geheugen tijdens het scannen",
+        "fr": "Correction hors mémoire lors de la numérisation",
+        "it": "Risolvere la memoria durante la scansione",
+        "es": "Arreglar la memoria mientras escanea",
+        "pl": "Naprawianie z pamięci podczas skanowania",
+        "uk": "Виправлення пам'яті при скануванні",
+        "zh-cn": "扫描时修复内存"
+      },
       "1.1.2": {
         "en": "Add meta object object for instance to store device pictures from device manager\nFix repository checker errors \n",
         "de": "Fügen Sie zum Beispiel Meta-Objekt-Objekt hinzu, um Gerätebilder vom Gerätemanager zu speichern\nRepository-Checker-Fehler behoben\n",
