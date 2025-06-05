@@ -76,7 +76,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	### **WORK IN PROGRESS**
 -->
 
-### ***WORK IN PROGRESS***
+### **WORK IN PROGRESS**
 * Fix out of memory while scanning
 
 ### 1.1.2 (2025-04-21)
