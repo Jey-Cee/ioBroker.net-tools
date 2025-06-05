@@ -222,12 +222,11 @@ class NetTools extends utils.Adapter {
 							return;
 						}
 						let ports = await this.getStateAsync(`${parentId}.portList`);
-						console.log(ports.val);
 						if (!ports) {
-							ports = this.config.portList;
+							ports = this.config.portList.split(',');
 						}
 
-						this.portScan(parentId, obj.native.ip, ports.val);
+						await this.scanPortsInBatches(parentId, obj.native.ip, ports.val);
 					}
 					break;
 			}
@@ -294,6 +293,28 @@ class NetTools extends utils.Adapter {
 	}
 
 	/**
+	 * Scans specified ports on a given IP address in batches.
+	 *
+	 * @param {string} id - Object id.
+	 * @param {string} ip - The IP address to scan.
+	 * @param {number[]} ports - An array of port numbers to be scanned.
+	 * @return {Promise<void>} A promise that resolves when all port scans are completed.
+	 */
+	async scanPortsInBatches(id, ip, ports) {
+		const batchSize = 10;
+		let portArrays = [];
+
+		for (let i = 0; i < ports.length; i += batchSize) {
+			portArrays.push(ports.slice(i, i + batchSize));
+		}
+
+		for (const portBatch of portArrays) {
+			await this.portScan(id, ip, portBatch.join(','));
+		}
+		this.log.info('Port scan finished');
+	}
+
+	/**
 	 *
 	 * @param {string} id - object id for host
 	 * @param {string} ip - ip address like 127.0.0.1
@@ -303,7 +324,7 @@ class NetTools extends utils.Adapter {
 		const alive = await this.getStateAsync(id + '.alive');
 		if (id === 'localhost' || alive?.val === true) {
 			this.log.info(`Scanning for open ports (${ports ? ports : '0-65535'}) at ${id}, please wait`);
-			await this.setStateAsync(id + '.ports', {val: 'Scanning, please wait', ack: true});
+			await this.setState(id + '.ports', {val: 'Scanning, please wait', ack: true});
 			let openPorts = [];
 			let options = {
 				target: ip,
@@ -330,7 +351,6 @@ class NetTools extends utils.Adapter {
 			scanner.on('done',  () => {
 				// finished !
 				this.setState(id + '.ports', {val: JSON.stringify(openPorts), ack: true});
-				this.log.info('Port scan finished');
 			});
 
 			scanner.run();
@@ -744,10 +764,10 @@ class NetTools extends utils.Adapter {
 		return true;
 	}
 
-	extendHostInformation(){
+	async extendHostInformation(){
 		if (this.config.portScan === true){
-			const ports = this.config.portList;
-			this.portScan('localhost', '127.0.0.1', ports);
+			const ports = this.config.portList.split(',');
+			await this.scanPortsInBatches('localhost', '127.0.0.1', ports);
 		}
 	}
 
