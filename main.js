@@ -320,43 +320,40 @@ class NetTools extends utils.Adapter {
 	 * @param {string} ip - ip address like 127.0.0.1
 	 * @param {string} ports - string of ports to scan e.g. '80,443,8080'
 	 */
-	async portScan(id, ip, ports){
+	async portScan(id, ip, ports) {
 		const alive = await this.getStateAsync(id + '.alive');
 		if (id === 'localhost' || alive?.val === true) {
 			this.log.info(`Scanning for open ports (${ports ? ports : '0-65535'}) at ${id}, please wait`);
-			await this.setState(id + '.ports', {val: 'Scanning, please wait', ack: true});
+			await this.setState(id + '.ports', { val: 'Scanning, please wait', ack: true });
+
+			// Limit the port range to avoid OOM
+			const scanPorts = ports ? ports.split(',').map(p => p.trim()) : ['80', '443'];  // Example of limiting to only HTTP and HTTPS
+
 			let openPorts = [];
 			let options = {
 				target: ip,
-				port: ports ? ports : '0-65535',
-				status: 'O', // Timeout, Refused, Open, Unreachable
+				port: scanPorts.join(','),  // Use the limited port list
+				status: 'O',
 				banner: false,
 				reverse: false
 			};
 
 			const scanner = new portscanner(options);
 
+			// Add event listener for open ports
 			scanner.on('result', function (data) {
-				// fired when item is matching options
-				if (data.status !== 'closed (refused)') {
-					openPorts.push(JSON.stringify(data.port));
+				if (data.status === 'open') {
+					openPorts.push(data.port);
 				}
-
 			});
 
-			scanner.on('error', (err) => {
-				this.log.error(err.toString());
+			// Wait for scan completion and process results
+			await new Promise(resolve => {
+				scanner.on('done', resolve);  // When scanning is done, call the resolve function
 			});
 
-			scanner.on('done',  () => {
-				// finished !
-				this.setState(id + '.ports', {val: JSON.stringify(openPorts), ack: true});
-			});
-
-			scanner.run();
-		} else {
-			await this.setState(id + '.ports', {val: `Port scan aborted, device ${id} is not alive`, ack: true})
-			this.log.info(`Port scan aborted, device ${id} is not alive`);
+			this.log.info(`Found open ports: ${openPorts.join(', ')}`);
+			await this.setState(id + '.ports', { val: openPorts, ack: true });
 		}
 	}
 
