@@ -179,7 +179,7 @@
     },
     {
       "_id": "localhost",
-      "type": "channel",
+      "type": "device",
       "common": {
         "name": "localhost"
       }

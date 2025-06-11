@@ -7,6 +7,7 @@
 const utils = require('@iobroker/adapter-core');
 const os = require('os');
 const dmNetTools  = require('./lib/devicemgmt.js');
+const migration = require('./lib/migration.js');
 const asTools = require('@all-smart/all-smart-tools');
 const arp = require('@network-utils/arp-lookup');
 const wol         = require('wol');
@@ -76,6 +77,7 @@ class NetTools extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
+		await migration.startMigration(this);
 		this.asTools = new asTools(this);
 		if (!this.config.licenseKey) {
 			const adapterObject = await this.getForeignObjectAsync(`system.adapter.net-tools`);
@@ -117,6 +119,8 @@ class NetTools extends utils.Adapter {
                 });
                 cronJob.start();
 			}
+
+			console.log(JSON.stringify(await this.getLocalNetworkInterfaces()));
 
 			this.subscribeStates('*discover');
 			this.subscribeStates('*wol');
@@ -741,6 +745,9 @@ class NetTools extends utils.Adapter {
 
 		let devices = [];
 		for (const d in objs){
+			if(objs[d]._id.includes('localhost')) {
+				continue;
+			}
 			let json = objs[d].native;
 			json.name = objs[d].common.name;
 			devices.push(json);
@@ -766,6 +773,11 @@ class NetTools extends utils.Adapter {
 			const ports = this.config.portList.split(',');
 			await this.scanPortsInBatches('localhost', '127.0.0.1', ports);
 		}
+	}
+
+	async getLocalNetworkInterfaces() {
+		const networkInterfaces = os.networkInterfaces();
+		return networkInterfaces;
 	}
 
 }
