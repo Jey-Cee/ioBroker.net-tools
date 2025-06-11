@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.1.3",
+    "version": "1.2.0",
     "news": {
+      "1.2.0": {
+        "en": "Added network interface information for localhost to device manager",
+        "de": "Netzwerkschnittstelleninformationen für localhost zu Gerätemanager hinzugefügt",
+        "ru": "Добавлена информация сетевого интерфейса для локального хоста в диспетчер устройств",
+        "pt": "Adicionamos informações de interface de rede para o localhost ao gerenciador de dispositivos",
+        "nl": "Netwerkinterface-informatie voor localhost toegevoegd aan apparaatbeheer",
+        "fr": "Ajout d'informations d'interface réseau pour localhost au gestionnaire de périphériques",
+        "it": "Aggiunto informazioni di interfaccia di rete per localhost al gestore di dispositivo",
+        "es": "Información de interfaz de red adicional para el administrador de dispositivos localhost",
+        "pl": "Dodano informacje o interfejsie sieciowym dla localhost do menedżera urządzeń",
+        "uk": "Додано інформацію інтерфейсу мережі для локальногоhost для диспетчера пристроїв",
+        "zh-cn": "为本地主机添加网络接口信息到设备管理器"
+      },
       "1.1.3": {
         "en": "Fix out of memory while scanning",
         "de": "Fix aus dem Speicher beim Scannen",
