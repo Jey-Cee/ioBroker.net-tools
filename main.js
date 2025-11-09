@@ -301,10 +301,20 @@ class NetTools extends utils.Adapter {
 	 *
 	 * @param {string} id - Object id.
 	 * @param {string} ip - The IP address to scan.
-	 * @param {number[]} ports - An array of port numbers to be scanned.
+	 * @param {number[]|string} ports - An array of port numbers or a comma-separated string of ports to be scanned.
 	 * @return {Promise<void>} A promise that resolves when all port scans are completed.
 	 */
 	async scanPortsInBatches(id, ip, ports) {
+		// Ensure ports is an array
+		if (typeof ports === 'string' && ports.length > 0) {
+			ports = ports.split(',').map(p => p.trim());
+		} else if (!ports) {
+			ports = this.config.portList.split(',').map(p => p.trim());
+		} else if (!Array.isArray(ports)) {
+			this.log.error('Invalid ports parameter: expected array or string');
+			return;
+		}
+
 		const batchSize = 10;
 		let portArrays = [];
 
@@ -312,9 +322,16 @@ class NetTools extends utils.Adapter {
 			portArrays.push(ports.slice(i, i + batchSize));
 		}
 
+		let foundPorts = [];
+
 		for (const portBatch of portArrays) {
-			await this.portScan(id, ip, portBatch.join(','));
+			const result = await this.portScan(id, ip, portBatch.join(','));
+			if(result.length >= 1) {
+				foundPorts.push(result);
+			}
 		}
+		this.log.info(`Found open ports: ${foundPorts}`);
+		await this.setState(`${id}.ports`, { val: foundPorts.toString(), ack: true });
 		this.log.info('Port scan finished');
 	}
 
@@ -325,39 +342,64 @@ class NetTools extends utils.Adapter {
 	 * @param {string} ports - string of ports to scan e.g. '80,443,8080'
 	 */
 	async portScan(id, ip, ports) {
-		const alive = await this.getStateAsync(id + '.alive');
-		if (id === 'localhost' || alive?.val === true) {
-			this.log.info(`Scanning for open ports (${ports ? ports : '0-65535'}) at ${id}, please wait`);
-			await this.setState(id + '.ports', { val: 'Scanning, please wait', ack: true });
+		const alive = await this.getStateAsync(`${id}.alive`);
+		if (!(id === 'localhost' || alive?.val === true)) return;
 
-			// Limit the port range to avoid OOM
-			const scanPorts = ports ? ports.split(',').map(p => p.trim()) : ['80', '443'];  // Example of limiting to only HTTP and HTTPS
+		const portList = (ports && String(ports).trim())
+			? String(ports).split(',').map(p => p.trim()).join(',')
+			: '80,443';
 
-			let openPorts = [];
-			let options = {
-				target: ip,
-				port: scanPorts.join(','),  // Use the limited port list
-				status: 'O',
-				banner: false,
-				reverse: false
-			};
+		this.log.info(`Scanning for open ports (${portList}) at ${id}, please wait`);
+		await this.setState(`${id}.ports`, { val: 'Scanning, please wait', ack: true });
 
-			const scanner = new portscanner(options);
+		const openPorts = [];
 
-			// Add event listener for open ports
-			scanner.on('result', function (data) {
-				if (data.status === 'open') {
-					openPorts.push(data.port);
-				}
+		const options = {
+			target: ip,
+			port: portList,   // z. B. "22,80,443" oder "20-30"
+			status: 'TROU',   // wir filtern selbst auf "open"
+			banner: false,
+			reverse: false,
+			timeout: 3000,    // pro Port
+			concurrency: 500  // optional: Ressourcen begrenzen
+		};
+
+		const scanner = new portscanner(options);
+
+		try {
+			await new Promise((resolve, reject) => {
+				const timeoutGuard = setTimeout(() => {
+					try { scanner.destroy && scanner.destroy(); } catch {}
+					reject(new Error('Port scan timeout nach 30 Sekunden'));
+				}, 30000);
+
+				scanner.on('result', (data) => {
+					this.log.debug(`Port scan result for ${id}: ${data.port} (${data.status})`);
+					if (data.status === 'open') openPorts.push(data.port);
+				});
+
+				scanner.on('error', (err) => {
+					clearTimeout(timeoutGuard);
+					this.log.error(`Port scan error for ${id}: ${err.message}`);
+					reject(err);
+				});
+
+				scanner.on('done', () => {
+					clearTimeout(timeoutGuard);
+					resolve();
+				});
+
+				// wichtig: Scan starten
+				scanner.run();
 			});
-
-			// Wait for scan completion and process results
-			await new Promise(resolve => {
-				scanner.on('done', resolve);  // When scanning is done, call the resolve function
-			});
-
-			this.log.info(`Found open ports: ${openPorts.join(', ')}`);
-			await this.setState(id + '.ports', { val: openPorts, ack: true });
+			return openPorts;
+			/*const resultString = openPorts.length ? openPorts.join(', ') : 'none';
+			this.log.info(`Found open ports: ${resultString}`);
+			await this.setState(`${id}.ports`, { val: resultString, ack: true });*/
+		} catch (err) {
+			const msg = err && err.message ? err.message : String(err);
+			this.log.error(`Port scan failed for ${id}: ${msg}`);
+			await this.setState(`${id}.ports`, { val: `Scan failed: ${msg}`, ack: true });
 		}
 	}
 
