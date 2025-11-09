@@ -75,7 +75,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.2.3 (2025-11-09)
 * Change link to license
 
 ### 1.2.2 (2025-11-09)

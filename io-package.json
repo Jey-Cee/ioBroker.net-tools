@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "news": {
+      "1.2.3": {
+        "en": "Change link to license",
+        "de": "Link ändern zur Lizenz",
+        "ru": "Изменить ссылку на лицензию",
+        "pt": "Mudar o link para a licença",
+        "nl": "Verwijzing naar licentie wijzigen",
+        "fr": "Changer le lien vers la licence",
+        "it": "Modifica del link alla licenza",
+        "es": "Cambiar el enlace a la licencia",
+        "pl": "Zmień link do licencji",
+        "uk": "Зміна посилання на ліцензію",
+        "zh-cn": "更改许可证链接"
+      },
       "1.2.2": {
         "en": "Fix ip and mac check while add manual new device",
         "de": "Fix ip und mac überprüfen, während manuell neues Gerät hinzufügen",
@@ -80,10 +93,6 @@
         "pl": "Nowa lista ignorowania funkcji dla autoodkrycia\nNowa funkcja Wake- on- LAN z IP dla urządzeń na innych podsieciach\nOptymalizacja konfiguracji dla lepszego reagowania zachowania\nSynchronizuj klucz licencyjny na wszystkich konfiguracjach instancji, jeśli klucz został już wprowadzony w konfiguracji jednej instancji\nTłumaczenie z interfejsu konfiguracyjnego na pliki i18n\nAktualizuj zależności",
         "uk": "Нова функція ігнорування списку для автоматичногорозкриття\nНова функція Wake-on-LAN з IP для пристроїв на інших підмережах\nОптимізуйте налаштування для кращої адаптивної поведінки\nСинхронізація ліцензійного ключа на всіх налаштуваннях екземпляра, якщо ключ вже увійшов в одну конкретну конфігурацію\nПереміщені переклади з інтерфейсу конфігурації до файлів i18n\nОновлення залежності",
         "zh-cn": "新特性忽略自动发现列表\n用于其他子网设备的新功能 Wake- on-LAN\n优化配置以更好地应对行为\n如果密钥已经输入到一个实例配置中, 在所有实例配置上同步许可密钥\n将配置界面的翻译移至 i18n 文件\n更新依赖关系\n修理一些由适配器检查器修补的东西"
-      },
-      "1.0.11": {
-        "en": "Fix high CPU load while running discovering devices",
-        "de": "Behebung der hohen CPU-Last bei der Erkennung von Geräten "
       }
     },
     "messages": [
