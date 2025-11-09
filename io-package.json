@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "news": {
+      "1.2.1": {
+        "en": "Refactor port scan",
+        "de": "Refactor Port Scan",
+        "ru": "Рефакторное сканирование портов",
+        "pt": "Varredura da porta de refator",
+        "nl": "Refactor poortscan",
+        "fr": "Analyse du port de refactor",
+        "it": "Scansione della porta del refactor",
+        "es": "Refactor port scan",
+        "pl": "Refaktor skanowania portu",
+        "uk": "Рефактор сканування порту",
+        "zh-cn": "重构端口扫描"
+      },
       "1.2.0": {
         "en": "Added network interface information for localhost to device manager",
         "de": "Netzwerkschnittstelleninformationen für localhost zu Gerätemanager hinzugefügt",

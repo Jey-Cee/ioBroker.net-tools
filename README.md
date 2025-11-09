@@ -75,8 +75,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.2.1 (2025-11-09)
 * Refactor port scan
 
 ### 1.2.0 (2025-06-11)
