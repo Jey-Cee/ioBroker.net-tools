@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "news": {
+      "1.2.2": {
+        "en": "Fix ip and mac check while add manual new device",
+        "de": "Fix ip und mac überprüfen, während manuell neues Gerät hinzufügen",
+        "ru": "Исправьте ip и mac, добавив новое устройство вручную",
+        "pt": "Corrigir ip e verificação Mac enquanto adicionar novo dispositivo manual",
+        "nl": "Ip en mac controleren terwijl handmatige nieuwe apparaat toevoegen",
+        "fr": "Correction ip et mac vérifier tout en ajoutant manuel nouveau périphérique",
+        "it": "Fissare ip e controllare mac mentre aggiungere nuovo dispositivo manuale",
+        "es": "Fijar el cheque de ip y mac mientras añadir el nuevo dispositivo manual",
+        "pl": "Napraw sprawdzanie ip i mac podczas dodawania ręcznego nowego urządzenia",
+        "uk": "Виправлення ip і mac перевірки при додаванні ручного нового пристрою",
+        "zh-cn": "在添加手动新设备的同时修复 ip 和 mac 检查"
+      },
       "1.2.1": {
         "en": "Refactor port scan",
         "de": "Refactor Port Scan",
