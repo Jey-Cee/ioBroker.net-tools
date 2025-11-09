@@ -149,7 +149,7 @@
     "licenseInformation": {
       "license": "CC-BY-NC-4.0",
       "type": "paid",
-      "link": "https://www.all-smart.net/produkt/iobroker-net-tools-v1-lizenz/"
+      "link": "https://raw.githubusercontent.com/Jey-Cee/ioBroker.net-tools/refs/heads/master/LICENSE"
     },
     "platform": "Javascript/Node.js",
     "icon": "net-tools.png",
