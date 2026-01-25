@@ -9,12 +9,12 @@
   "homepage": "https://github.com/Jey-Cee/ioBroker.net-tools",
   "license": "CC-BY-NC-4.0",
   "keywords": [
+    "ioBroker",
     "poll",
     "ping",
     "ip",
     "wake-on-lan",
-    "port scan",
-    "iobroker"
+    "port scan"
   ],
   "repository": {
     "type": "git",
