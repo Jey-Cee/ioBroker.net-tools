@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "net-tools",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "news": {
+      "1.2.4": {
+        "en": "Migrate from oui to oui-data",
+        "de": "Migration von oui zu oui-data",
+        "ru": "Переход с oui на oui-data",
+        "pt": "Migrar de oui para oui-data",
+        "nl": "Migreren van oui naar oui-data",
+        "fr": "Migrer de oui vers oui-data",
+        "it": "Migrazione da oui a oui-data",
+        "es": "Migrar de oui a oui-data",
+        "pl": "Migracja z oui do oui-data",
+        "uk": "Перехід з oui на oui-data",
+        "zh-cn": "从 oui 迁移到 oui-data"
+      },
       "1.2.3": {
         "en": "Change link to license",
         "de": "Link ändern zur Lizenz",

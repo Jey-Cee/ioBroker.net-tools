@@ -12,7 +12,7 @@ const asTools = require('@all-smart/all-smart-tools');
 const arp = require('@network-utils/arp-lookup');
 const wol         = require('wol');
 const portscanner = require('evilscan');
-const oui = require('oui');
+const ouiData = require('oui-data');
 const ping        = require('./lib/ping');
 const objects = require('./lib/object_definition').object_definitions;
 const { nslookup } = require('./lib/nslookup');
@@ -491,7 +491,10 @@ class NetTools extends utils.Adapter {
 					if (result.alive === true) {
 						result.mac = await arp.toMAC(result.host);
 						if (result.mac !== undefined && result.mac !== null) {
-							result.vendor = oui(result.mac)
+							result.vendor = this.getVendor(result.mac);
+							if (result.vendor) {
+								result.vendor = result.vendor.replace(/\n/g, ', ');
+							}
 						} else {
 							this.log.info('Can not get mac for ' + result.host + '. Going to next IP.')
 							resolve(true);
@@ -594,14 +597,14 @@ class NetTools extends utils.Adapter {
 				idName = name;
 			} else {
 				idName = mac.replace(/:/g, '');
-				vendor = oui(mac);
+				vendor = this.getVendor(mac);
 				if (vendor) {
 					vendor = vendor.replace(/\n/g, ', ');
 				}
 			}
 		} else {
 			idName = mac.replace(/:/g, '');
-			vendor = oui(mac);
+			vendor = this.getVendor(mac);
 			if (vendor){
 				vendor = vendor.replace(/\n/g, ', ');
 			}
@@ -820,6 +823,19 @@ class NetTools extends utils.Adapter {
 	async getLocalNetworkInterfaces() {
 		const networkInterfaces = os.networkInterfaces();
 		return networkInterfaces;
+	}
+
+	/**
+	 * Get vendor from MAC address
+	 * @param {string} mac
+	 * @returns {string}
+	 */
+	getVendor(mac) {
+		if (!mac || typeof mac !== 'string') {
+			return '';
+		}
+		const prefix = mac.replace(/[:.-]/g, '').toUpperCase().slice(0, 6);
+		return ouiData[prefix] || '';
 	}
 
 }
