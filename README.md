@@ -73,6 +73,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 ## Changelog
 
 ### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
 - (copilot) Adapter requires node.js >= 22 now
 - (iobroker-bot) Adapter requires node.js >= 20 now.
 <!--
