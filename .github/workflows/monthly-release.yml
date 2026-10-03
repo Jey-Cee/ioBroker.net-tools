@@ -2,7 +2,7 @@ name: Monthly Release
 
 # Automatically creates a patch release on the 3rd of every month
 # if there are any commits since the last release tag.
-# Requires NPM_TOKEN secret to be set in the repository secrets.
+# Requires NPM_TOKEN secret to be set for the deploy job in test-and-release.yml.
 
 on:
   schedule:
@@ -17,6 +17,7 @@ jobs:
       id-token: write
 
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -36,7 +37,7 @@ jobs:
             if [ "${COMMITS}" -gt "0" ]; then
               # Collect commit messages (skip merge commits and dependabot version bumps noise)
               CHANGELOG_EN=$(git log "${LAST_TAG}..HEAD" --pretty=format:"* %s" --no-merges | \
-                grep -v "^\* chore(release)" | head -20 || echo "* Updated dependencies")
+                grep -v "^\\* chore(release)" | head -20 || echo "* Updated dependencies")
               if [ -z "$CHANGELOG_EN" ]; then
                 CHANGELOG_EN="* Updated dependencies"
               fi
@@ -119,6 +120,7 @@ jobs:
           # Insert after the "## Changelog" line (before first existing version entry)
           # Handle both "### **WORK IN PROGRESS**" placeholder and direct entries
           if grep -q "WORK IN PROGRESS" README.md; then
+            # Insert after the WORK IN PROGRESS block (before the next ### x.y.z line)
             python3 - <<'PYEOF'
           import re, os
 
@@ -133,9 +135,11 @@ jobs:
 
           # Insert after WORK IN PROGRESS block, before next semver heading
           pattern = r'(### \*\*WORK IN PROGRESS\*\*.*?\n(?:.*\n)*?)(### \d+\.\d+\.\d+)'
+          replacement = r'\1' + entry + r'\3'
           new_content = re.sub(pattern, lambda m: m.group(1) + entry + m.group(2), content, count=1)
 
           if new_content == content:
+              # Fallback: insert after ## Changelog line
               new_content = content.replace('## Changelog\n', f'## Changelog\n\n{entry}', 1)
 
           with open('README.md', 'w') as f:

@@ -5,7 +5,7 @@
  */
 
 const utils = require('@iobroker/adapter-core');
-const os = require('os');
+const os = require('node:os');
 const dmNetTools  = require('./lib/devicemgmt.js');
 const migration = require('./lib/migration.js');
 const asTools = require('@all-smart/all-smart-tools');
