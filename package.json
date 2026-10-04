@@ -24,7 +24,7 @@
     "node": ">= 22"
   },
   "dependencies": {
-    "@all-smart/all-smart-tools": "1.0.14",
+    "@all-smart/all-smart-tools": "1.0.15",
     "@iobroker/adapter-core": "^3.4.3",
     "@iobroker/dm-utils": "^3.2.1",
     "@network-utils/arp-lookup": "^2.1.0",
