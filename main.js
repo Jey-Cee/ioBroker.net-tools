@@ -177,13 +177,22 @@ class NetTools extends utils.Adapter {
 			if (obj.type === 'device') {
 				// Look if there is a host entry in taskList for the ip
 				const hostEntry = taskList.find(entry => entry?.mac === obj.native.mac);
-                if (hostEntry) {
+				if (hostEntry) {
+					if (hostEntry.host !== obj.native.ip) {
+						// IP changed, update quicklinks
+						this.getStateAsync(`${id}.ports`).then(portsState => {
+							if (portsState && typeof portsState.val === 'string') {
+								const openPorts = portsState.val.split(',').map(p => p.trim());
+								this.updateQuicklinks(id, obj.native.ip, openPorts);
+							}
+						});
+					}
 					hostEntry.host = obj.native.ip;
-                    hostEntry.pingInterval = obj.native.pingInterval;
-                    hostEntry.retries = obj.native.retries;
+					hostEntry.pingInterval = obj.native.pingInterval;
+					hostEntry.retries = obj.native.retries;
 					taskList.push(hostEntry);
 				}
-            }
+			}
 		} else {
 			// The object was deleted
 			//this.log.info(`object ${id} deleted`);
@@ -201,8 +210,9 @@ class NetTools extends utils.Adapter {
 			const dp = tmp.pop();
 			switch (dp) {
 				case 'discover':
-					if (state.val) {
+					if (state.val && !state.ack) {
 						this.discover();
+						this.setState(id, { val: state.val, ack: true });
 					}
 					break;
 				case 'wol':
@@ -218,7 +228,8 @@ class NetTools extends utils.Adapter {
 					}
 					break;
 				case 'scan':
-					if (state.val) {
+					if (state.val && !state.ack) {
+						this.setState(id, { val: state.val, ack: true });
 						const parentId = await this.getParentId(id);
 						const obj = await this.getObjectAsync(parentId);
 						if(obj === null || obj === undefined){
@@ -326,13 +337,66 @@ class NetTools extends utils.Adapter {
 
 		for (const portBatch of portArrays) {
 			const result = await this.portScan(id, ip, portBatch.join(','));
-			if(result.length >= 1) {
+			if(result && result.length >= 1) {
 				foundPorts.push(result);
 			}
 		}
 		this.log.info(`Found open ports: ${foundPorts}`);
-		await this.setState(`${id}.ports`, { val: foundPorts.toString(), ack: true });
+		await this.setState(`${id}.ports`, { val: foundPorts.flat().toString(), ack: true });
+
+		// Update quicklinks in common object
+		await this.updateQuicklinks(id, ip, foundPorts.flat());
+
 		this.log.info('Port scan finished');
+		// Trigger refresh in DM if active
+		if (this.deviceManagement) {
+			this.deviceManagement.handleScanFinished(id);
+		}
+	}
+
+	/**
+	 * Updates the quicklinks in the common object for a device.
+	 *
+	 * @param {string} id - Object id.
+	 * @param {string} ip - IP address of the device.
+	 * @param {string[]} openPorts - Array of open ports.
+	 */
+	async updateQuicklinks(id, ip, openPorts) {
+		if (!ip) return;
+		const quicklinks = [];
+		const otherPorts = ['8080', '8081', '8443', '8888'];
+		for (const port of openPorts) {
+			const portStr = String(port);
+			if (portStr === '80') {
+				quicklinks.push({
+					name: 'Web HTTP',
+					url: `http://${ip}`
+				});
+			} else if (portStr === '443') {
+				quicklinks.push({
+					name: 'Web HTTPS',
+					url: `https://${ip}`
+				});
+			} else if (otherPorts.includes(portStr)) {
+				const protocol = portStr.endsWith('443') ? 'https' : 'http';
+				quicklinks.push({
+					name: `Web Port ${portStr}`,
+					url: `${protocol}://${ip}:${portStr}`
+				});
+			}
+		}
+
+		const obj = await this.getObjectAsync(id);
+		if (obj && obj.common) {
+			if (JSON.stringify(obj.common.quicklink) !== JSON.stringify(quicklinks)) {
+				this.log.debug(`Updating quicklinks for ${id}: ${JSON.stringify(quicklinks)}`);
+				await this.extendObject(id, {
+					common: {
+						quicklink: quicklinks
+					}
+				});
+			}
+		}
 	}
 
 	/**
@@ -343,7 +407,7 @@ class NetTools extends utils.Adapter {
 	 */
 	async portScan(id, ip, ports) {
 		const alive = await this.getStateAsync(`${id}.alive`);
-		if (!(id === 'localhost' || alive?.val === true)) return;
+		if (!(id === 'localhost' || alive?.val === true)) return [];
 
 		const portList = (ports && String(ports).trim())
 			? String(ports).split(',').map(p => p.trim()).join(',')
@@ -400,6 +464,7 @@ class NetTools extends utils.Adapter {
 			const msg = err && err.message ? err.message : String(err);
 			this.log.error(`Port scan failed for ${id}: ${msg}`);
 			await this.setState(`${id}.ports`, { val: `Scan failed: ${msg}`, ack: true });
+			return [];
 		}
 	}
 
@@ -512,12 +577,20 @@ class NetTools extends utils.Adapter {
 							}
 							if (exists === true && entry.ip !== '' && entry.ip !== undefined && entry.ip !== result.host && entry.mac === result.mac) {
 								const idName = result.mac.replace(/:/g, '');
-								await this.extendObject(this.namespace + '.' + idName, {
+								const fullId = this.namespace + '.' + idName;
+								await this.extendObject(fullId, {
 									native: {
 										ip: result.host,
 										vendor: result.vendor
 									}
 								});
+
+								// Update quicklinks if IP changed
+								const portsState = await this.getStateAsync(`${fullId}.ports`);
+								if (portsState && typeof portsState.val === 'string') {
+									const openPorts = portsState.val.split(',').map(p => p.trim());
+									await this.updateQuicklinks(fullId, result.host, openPorts);
+								}
 							}
 						}
 						const ignore = await this.checkIgnore(result.mac);
