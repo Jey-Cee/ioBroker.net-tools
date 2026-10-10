@@ -79,6 +79,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 - (Jey Cee) Add port scan action to device management
 - (Jey Cee) Show IP address and open ports in device details
 - (Jey Cee) Create quicklinks for web ports found by port scan
+- (Jey Cee) Call ping.exe directly on Windows instead of using process.env (compact mode)
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
