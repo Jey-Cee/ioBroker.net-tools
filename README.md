@@ -75,13 +75,14 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
 - (iobroker-bot) Adapter requires node.js >= 20 now.
+- (Jey Cee) Migrate from oui to oui-data
+- (Jey Cee) Add port scan action to device management
+- (Jey Cee) Show IP address and open ports in device details
+- (Jey Cee) Create quicklinks for web ports found by port scan
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### 1.2.4 (2025-11-10)
-* (Jey Cee) Migrate from oui to oui-data
-
 ### 1.2.3 (2025-11-09)
 * Change link to license
 
