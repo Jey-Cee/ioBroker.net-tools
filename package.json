@@ -30,7 +30,7 @@
     "@network-utils/arp-lookup": "^2.1.0",
     "cron": "^4.4.0",
     "evilscan": "1.9.1",
-    "oui-data": "^1.1.562",
+    "oui-data": "^2.1.31",
     "wol": "1.0.7"
   },
   "devDependencies": {
