@@ -50,7 +50,7 @@ let pingTimeout = null;
 let taskList = [];
 let cronJob = null;
 
-const FORBIDDEN_CHARS = /[\]\[*,;'"`<>\\?]/g;
+const FORBIDDEN_CHARS = /[\][*,;'"`<>\\?]/g;
 
 class NetTools extends utils.Adapter {
     /**
@@ -108,7 +108,7 @@ class NetTools extends utils.Adapter {
                 this.config.pingInterval = 5;
             }
 
-            const preparedObjects = await this.prepareObjectsByConfig();
+            await this.prepareObjectsByConfig();
             this.pingAll();
 
             if (this.config.autoSearch === true && this.config.searchSchedule !== '') {
@@ -158,7 +158,7 @@ class NetTools extends utils.Adapter {
             }
 
             callback();
-        } catch (e) {
+        } catch {
             callback();
         }
     }
@@ -453,7 +453,9 @@ class NetTools extends utils.Adapter {
                 const timeoutGuard = setTimeout(() => {
                     try {
                         scanner.destroy && scanner.destroy();
-                    } catch {}
+                    } catch {
+                        // ignore errors while destroying the scanner
+                    }
                     reject(new Error('Port scan timeout nach 30 Sekunden'));
                 }, 30000);
 
@@ -549,7 +551,7 @@ class NetTools extends utils.Adapter {
                     }
                 }
 
-                const result = await Promise.all(promises);
+                await Promise.all(promises);
             }
 
             this.log.info('Discovery finished');
@@ -568,7 +570,7 @@ class NetTools extends utils.Adapter {
     }
 
     async handleDiscoveryProbe(ip, oldDevices, decimalSeparator) {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try {
                 ping.probe(
                     ip,
@@ -593,7 +595,7 @@ class NetTools extends utils.Adapter {
                             }
                             try {
                                 result.name = await nslookup(result.host);
-                            } catch (error) {
+                            } catch {
                                 result.name = result.host;
                             }
                             let exists = false;
@@ -744,7 +746,7 @@ class NetTools extends utils.Adapter {
             await this.extendObject(`${idName}.${obj}`, objects[obj]);
         }
 
-        const preparedObjects = await this.prepareObjectsByConfig();
+        await this.prepareObjectsByConfig();
         this.pingAll();
     }
 
