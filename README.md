@@ -80,6 +80,7 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 - (Jey Cee) Show IP address and open ports in device details
 - (Jey Cee) Create quicklinks for web ports found by port scan
 - (Jey Cee) Call ping.exe directly on Windows instead of using process.env (compact mode)
+- (Jey Cee) Update @all-smart/all-smart-tools to 1.0.16
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
