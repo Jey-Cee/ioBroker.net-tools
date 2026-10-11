@@ -135,6 +135,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - (Jey Cee) Add extended detection for devices that do not answer pings while sleeping (e.g. iPhone)
 - (Jey Cee) Fix changed device settings (Wake-on-LAN with IP) not being applied until restart
 - (Jey Cee) Add service monitoring via TCP ping for multiple ports per device, with interval and tolerance per port
+- (Jey Cee) Device settings dialog uses the available width (multi-column layout)
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
