@@ -30,6 +30,18 @@ Note: If you are using ioBroker within a docker container this feature will not 
 Pings specified IP addresses in defined interval and monitors the results. (alive, rps, time)
 The ping interval can be specified on device level.
 
+#### Latency and packet loss
+
+Each ping sends several packets (setting "Packets per ping" of the device, default 4, maximum 20). From the answers net-tools calculates:
+
+| State | Meaning |
+|---|---|
+| `ping` | Round trip time of the last answer (ms) |
+| `pingMin` / `pingMax` / `pingAvg` | Minimum / maximum / average round trip time of the ping (ms) |
+| `packetLoss` | Lost packets of the ping in percent |
+
+Without any answer the times are `null` and `packetLoss` is 100. Each ping takes about one second per packet.
+
 #### Extended detection (smartphones)
 
 Smartphones like iPhones often do not answer pings while sleeping and would be shown as offline.
@@ -136,6 +148,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - (Jey Cee) Fix changed device settings (Wake-on-LAN with IP) not being applied until restart
 - (Jey Cee) Add service monitoring via TCP ping for multiple ports per device, with interval and tolerance per port
 - (Jey Cee) Device settings dialog uses the available width (multi-column layout)
+- (Jey Cee) Add latency (ping, min, max, avg) and packet loss per device, with configurable packets per ping
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**

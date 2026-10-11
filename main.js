@@ -52,6 +52,10 @@ let deviceListTimeout = null;
 let taskList = [];
 let cronJob = null;
 
+const DEFAULT_PING_COUNT = 4;
+const MAX_PING_COUNT = 20;
+const LATENCY_STATES = ['ping', 'pingMin', 'pingMax', 'pingAvg', 'packetLoss'];
+
 const SERVICE_TIMEOUT = 2000;
 const SERVICE_MIN_INTERVAL = 5;
 
@@ -221,6 +225,7 @@ class NetTools extends utils.Adapter {
                     hostEntry.host = obj.native.ip;
                     hostEntry.pingInterval = obj.native.pingInterval;
                     hostEntry.retries = obj.native.retries;
+                    hostEntry.pingCount = parsePingCount(obj.native.pingCount);
                     hostEntry.wakeWithIp = obj.native.wakeWithIp === true;
                     hostEntry.extendedDetection = obj.native.extendedDetection === true;
                     const services = parseServiceList(obj.native.services, hostEntry.pingInterval);
@@ -1019,55 +1024,94 @@ class NetTools extends utils.Adapter {
         if (!taskList[host]) {
             return;
         }
-        ping.probe(taskList[host].host, { log: this.log.debug }, async (err, result) => {
-            err && this.log.error(err);
+        ping.probe(
+            taskList[host].host,
+            { log: this.log.debug, minReply: taskList[host].pingCount || DEFAULT_PING_COUNT },
+            async (err, result) => {
+                err && this.log.error(err);
 
-            if (taskList.length === 0 || taskList[host] === null || taskList[host] === undefined) {
-                return;
-            }
-
-            // Devices like smartphones do not answer pings while sleeping: check presence via ARP
-            if (result && result.alive !== true && taskList[host].extendedDetection && taskList[host].mac) {
-                const task = taskList[host];
-                try {
-                    if (await this.detectPresence(task.host, task.mac)) {
-                        this.log.debug(`${task.host} does not answer ping, but was detected via ARP`);
-                        result = { ...result, alive: true, ms: null };
-                    }
-                } catch (e) {
-                    this.log.debug(`Extended detection of ${task.host} failed: ${e}`);
-                }
-                if (taskList[host] !== task) {
+                if (taskList.length === 0 || taskList[host] === null || taskList[host] === undefined) {
                     return;
                 }
-            }
 
-            if (result) {
-                if (result.alive === true) {
-                    this.setState(`${taskList[host].stateAlive.channel}.alive`, { val: true, ack: true });
-                    this.setState(`${taskList[host].stateTime.channel}.time`, {
-                        val: result.ms === null ? 0 : result.ms / 1000,
-                        ack: true,
-                    });
-                    let rps = 0;
-                    if (result.alive && result.ms !== null && result.ms > 0) {
-                        rps = result.ms <= 1 ? 1000 : 1000.0 / result.ms;
+                // Devices like smartphones do not answer pings while sleeping: check presence via ARP
+                if (result && result.alive !== true && taskList[host].extendedDetection && taskList[host].mac) {
+                    const task = taskList[host];
+                    try {
+                        if (await this.detectPresence(task.host, task.mac)) {
+                            this.log.debug(`${task.host} does not answer ping, but was detected via ARP`);
+                            result = { ...result, alive: true, ms: null };
+                        }
+                    } catch (e) {
+                        this.log.debug(`Extended detection of ${task.host} failed: ${e}`);
                     }
-                    this.setState(`${taskList[host].stateRps.channel}.rps`, { val: rps, ack: true });
-                    taskList[host].retryCounter = 0;
-                } else if (taskList[host].retryCounter <= taskList[host].retries) {
-                    taskList[host].retryCounter++;
-                } else {
-                    this.setState(`${taskList[host].stateAlive.channel}.alive`, { val: false, ack: true });
-                    taskList[host].retryCounter = 0;
+                    if (taskList[host] !== task) {
+                        return;
+                    }
                 }
-            }
 
-            if (!isStopping) {
-                // Planen Sie den nächsten Ping basierend auf dem Intervall
-                pingTimeout = setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
-            }
-        });
+                if (result) {
+                    this.writeLatencyStates(taskList[host].stateAlive.channel, result);
+                }
+
+                if (result) {
+                    if (result.alive === true) {
+                        this.setState(`${taskList[host].stateAlive.channel}.alive`, { val: true, ack: true });
+                        this.setState(`${taskList[host].stateTime.channel}.time`, {
+                            val: result.ms === null ? 0 : result.ms / 1000,
+                            ack: true,
+                        });
+                        let rps = 0;
+                        if (result.alive && result.ms !== null && result.ms > 0) {
+                            rps = result.ms <= 1 ? 1000 : 1000.0 / result.ms;
+                        }
+                        this.setState(`${taskList[host].stateRps.channel}.rps`, { val: rps, ack: true });
+                        taskList[host].retryCounter = 0;
+                    } else if (taskList[host].retryCounter <= taskList[host].retries) {
+                        taskList[host].retryCounter++;
+                    } else {
+                        this.setState(`${taskList[host].stateAlive.channel}.alive`, { val: false, ack: true });
+                        taskList[host].retryCounter = 0;
+                    }
+                }
+
+                if (!isStopping) {
+                    // Planen Sie den nächsten Ping basierend auf dem Intervall
+                    pingTimeout = setTimeout(() => this.pingDevice(host), taskList[host].pingInterval * 1000);
+                }
+            },
+        );
+    }
+
+    /**
+     * Creates the latency states (ping, pingMin, pingMax, pingAvg, packetLoss) of a device if they do not exist,
+     * e.g. for devices created by an older version.
+     *
+     * @param {string} channel - Device id without namespace.
+     */
+    async ensureLatencyStates(channel) {
+        for (const name of LATENCY_STATES) {
+            await this.setObjectNotExistsAsync(`${channel}.${name}`, objects[name]);
+        }
+    }
+
+    /**
+     * Writes the latency and packet loss of a ping result.
+     *
+     * @param {string} channel - Device id without namespace.
+     * @param {{last?: number|null, min?: number|null, max?: number|null, avg?: number|null, packetLoss?: number}} result - Result of ping.probe.
+     */
+    writeLatencyStates(channel, result) {
+        const values = {
+            ping: result.last,
+            pingMin: result.min,
+            pingMax: result.max,
+            pingAvg: result.avg,
+            packetLoss: result.packetLoss,
+        };
+        for (const [name, val] of Object.entries(values)) {
+            this.setState(`${channel}.${name}`, { val: val === undefined ? null : val, ack: true });
+        }
     }
 
     /**
@@ -1324,6 +1368,7 @@ class NetTools extends utils.Adapter {
                 pingInterval: config.pingInterval ? config.pingInterval : this.config.pingInterval,
                 retries: config.retries ? config.retries : 0,
                 retryCounter: 0,
+                pingCount: parsePingCount(config.pingCount),
                 wakeWithIp: config.wakeWithIp ? config.wakeWithIp : false,
                 extendedDetection: config.extendedDetection === true,
                 services: parseServiceList(
@@ -1371,6 +1416,11 @@ class NetTools extends utils.Adapter {
         });
 
         for (const task of taskList) {
+            try {
+                await this.ensureLatencyStates(task.stateAlive.channel);
+            } catch (err) {
+                this.log.warn(`Cannot create latency states of ${task.stateAlive.channel}: ${err}`);
+            }
             try {
                 await this.syncServiceStates(
                     task.stateAlive.channel,
@@ -1437,6 +1487,20 @@ function sendMagicPacket(mac, address) {
             },
         );
     });
+}
+
+/**
+ * Returns the number of ping packets per ping run of a device.
+ *
+ * @param {any} value - Configured value.
+ * @returns {number} Number between 1 and MAX_PING_COUNT, DEFAULT_PING_COUNT if not set.
+ */
+function parsePingCount(value) {
+    const count = parseInt(value, 10);
+    if (!Number.isInteger(count) || count < 1) {
+        return DEFAULT_PING_COUNT;
+    }
+    return Math.min(count, MAX_PING_COUNT);
 }
 
 /**
