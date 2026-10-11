@@ -169,6 +169,8 @@
     "mode": "daemon",
     "type": "network",
     "compact": true,
+    "messagebox": true,
+    "blockly": true,
     "tier": 2,
     "connectionType": "local",
     "dataSource": "poll",

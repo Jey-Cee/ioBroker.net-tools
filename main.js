@@ -273,10 +273,43 @@ class NetTools extends utils.Adapter {
                 case 'ping': {
                     // Try to ping one IP or name
                     if (obj.callback && obj.message) {
-                        //ping.probe(obj.message, {log: this.log.debug}, (err, result) =>
-                        ping.probe(obj.message, {}, (err, result) =>
-                            this.sendTo(obj.from, obj.command, { result }, obj.callback),
-                        );
+                        ping.probe(String(obj.message), {}, (err, result) => {
+                            if (err) {
+                                this.log.warn(`Ping of ${obj.message} failed: ${err}`);
+                                result = { host: obj.message, alive: false, ms: null, error: String(err) };
+                            }
+                            this.sendTo(obj.from, obj.command, { result }, obj.callback);
+                        });
+                    }
+                    break;
+                }
+                case 'portScan': {
+                    // Scan ports of one IP or name: message = 'IP' or { ip: 'IP', ports: '22,80,443' }
+                    const ip = typeof obj.message === 'object' ? obj.message.ip : obj.message;
+                    const requestedPorts = typeof obj.message === 'object' ? obj.message.ports : null;
+                    const result = { host: ip, ports: [] };
+                    if (!ip || typeof ip !== 'string') {
+                        result.error = 'No IP address given';
+                    } else {
+                        const portList =
+                            typeof requestedPorts === 'string' && requestedPorts.trim()
+                                ? requestedPorts
+                                      .split(',')
+                                      .map(p => p.trim())
+                                      .filter(p => p !== '')
+                                      .join(',')
+                                : Array.isArray(requestedPorts) && requestedPorts.length
+                                  ? requestedPorts.join(',')
+                                  : this.getConfiguredPorts().join(',');
+                        try {
+                            this.log.info(`Scanning for open ports (${portList}) at ${ip} (requested by ${obj.from})`);
+                            result.ports = await this.runPortScan(ip.trim(), portList);
+                        } catch (err) {
+                            result.error = err && err.message ? err.message : String(err);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
                     break;
                 }
@@ -448,62 +481,71 @@ class NetTools extends utils.Adapter {
         this.log.info(`Scanning for open ports (${portList}) at ${id}, please wait`);
         await this.setState(`${id}.ports`, { val: 'Scanning, please wait', ack: true });
 
-        const openPorts = [];
-
-        const options = {
-            target: ip,
-            port: portList, // z. B. "22,80,443" oder "20-30"
-            status: 'TROU', // wir filtern selbst auf "open"
-            banner: false,
-            reverse: false,
-            timeout: 3000, // pro Port
-            concurrency: 500, // optional: Ressourcen begrenzen
-        };
-
-        const scanner = new portscanner(options);
-
         try {
-            await new Promise((resolve, reject) => {
-                const timeoutGuard = setTimeout(() => {
-                    try {
-                        scanner.destroy && scanner.destroy();
-                    } catch {
-                        // ignore errors while destroying the scanner
-                    }
-                    reject(new Error('Port scan timeout nach 30 Sekunden'));
-                }, 30000);
-
-                scanner.on('result', data => {
-                    this.log.debug(`Port scan result for ${id}: ${data.port} (${data.status})`);
-                    if (data.status === 'open') {
-                        openPorts.push(data.port);
-                    }
-                });
-
-                scanner.on('error', err => {
-                    clearTimeout(timeoutGuard);
-                    this.log.error(`Port scan error for ${id}: ${err.message}`);
-                    reject(err);
-                });
-
-                scanner.on('done', () => {
-                    clearTimeout(timeoutGuard);
-                    resolve();
-                });
-
-                // wichtig: Scan starten
-                scanner.run();
-            });
-            return openPorts;
-            /*const resultString = openPorts.length ? openPorts.join(', ') : 'none';
-			this.log.info(`Found open ports: ${resultString}`);
-			await this.setState(`${id}.ports`, { val: resultString, ack: true });*/
+            return await this.runPortScan(ip, portList, id);
         } catch (err) {
             const msg = err && err.message ? err.message : String(err);
             this.log.error(`Port scan failed for ${id}: ${msg}`);
             await this.setState(`${id}.ports`, { val: `Scan failed: ${msg}`, ack: true });
             return [];
         }
+    }
+
+    /**
+     * Scans the given ports of an IP address without touching any states.
+     *
+     * @param {string} ip - IP address or host name to scan.
+     * @param {string} portList - Comma separated ports or ranges, e.g. "22,80,443" or "20-30".
+     * @param {string} [label] - Name used in log messages.
+     * @returns {Promise<number[]>} Open ports.
+     */
+    async runPortScan(ip, portList, label = ip) {
+        const openPorts = [];
+
+        const options = {
+            target: ip,
+            port: portList,
+            status: 'TROU', // filtered on "open" below
+            banner: false,
+            reverse: false,
+            timeout: 3000, // per port
+            concurrency: 500,
+        };
+
+        const scanner = new portscanner(options);
+
+        await new Promise((resolve, reject) => {
+            const timeoutGuard = setTimeout(() => {
+                try {
+                    scanner.destroy && scanner.destroy();
+                } catch {
+                    // ignore errors while destroying the scanner
+                }
+                reject(new Error('Port scan timeout after 30 seconds'));
+            }, 30000);
+
+            scanner.on('result', data => {
+                this.log.debug(`Port scan result for ${label}: ${data.port} (${data.status})`);
+                if (data.status === 'open') {
+                    openPorts.push(data.port);
+                }
+            });
+
+            scanner.on('error', err => {
+                clearTimeout(timeoutGuard);
+                this.log.error(`Port scan error for ${label}: ${err.message}`);
+                reject(err);
+            });
+
+            scanner.on('done', () => {
+                clearTimeout(timeoutGuard);
+                resolve();
+            });
+
+            scanner.run();
+        });
+
+        return openPorts;
     }
 
     async getParentId(id) {
