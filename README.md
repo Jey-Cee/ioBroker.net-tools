@@ -30,6 +30,17 @@ Note: If you are using ioBroker within a docker container this feature will not 
 Pings specified IP addresses in defined interval and monitors the results. (alive, rps, time)
 The ping interval can be specified on device level.
 
+#### Extended detection (smartphones)
+
+Smartphones like iPhones often do not answer pings while sleeping and would be shown as offline.
+Enable "Extended detection (smartphones)" in the settings of the device (device manager). If the device does not answer the ping,
+net-tools sends a UDP packet to port 5353 and tries a TCP connection to port 62078, which wakes up the WLAN of the device,
+and then checks whether the device answers ARP with its MAC address. No root rights and no additional tools (like hping3) are needed.
+
+- Works only for devices in the subnet of the ioBroker host (ARP does not pass routers).
+- On Linux the state of the ARP entry is checked (`ip neigh`), so outdated entries are not counted. On other systems the ARP table is used, which may show a device as present for some time after it left.
+- iPhone: set "Private Wi-Fi Address" for your home network to "Fixed" or "Off". With "Rotating" the MAC address changes and the device can no longer be detected.
+
 ### Wake-on-LAN
 
 Set the wol object to true and 3 WOL packages are sent, with a pause of 750ms, to your device.
@@ -107,6 +118,8 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - (Jey Cee) Add sendTo command portScan
 - (Jey Cee) Add Blockly blocks for ping, port scan and Wake-on-LAN
 - (Jey Cee) Add Blockly block to select a device found by net-tools
+- (Jey Cee) Add extended detection for devices that do not answer pings while sleeping (e.g. iPhone)
+- (Jey Cee) Fix changed device settings (Wake-on-LAN with IP) not being applied until restart
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**

@@ -7,6 +7,8 @@
 const utils = require('@iobroker/adapter-core');
 const os = require('node:os');
 const net = require('node:net');
+const dgram = require('node:dgram');
+const { execFile } = require('node:child_process');
 const dmNetTools = require('./lib/devicemgmt.js');
 const migration = require('./lib/migration.js');
 const asTools = require('@all-smart/all-smart-tools');
@@ -49,6 +51,10 @@ let deviceListTimeout = null;
  */
 let taskList = [];
 let cronJob = null;
+
+const PRESENCE_UDP_PORT = 5353;
+const PRESENCE_TCP_PORT = 62078;
+const PRESENCE_ARP_TIMEOUT = 7000;
 
 const WOL_PACKET_COUNT = 3;
 const WOL_PACKET_DELAY = 750;
@@ -204,7 +210,8 @@ class NetTools extends utils.Adapter {
                     hostEntry.host = obj.native.ip;
                     hostEntry.pingInterval = obj.native.pingInterval;
                     hostEntry.retries = obj.native.retries;
-                    taskList.push(hostEntry);
+                    hostEntry.wakeWithIp = obj.native.wakeWithIp === true;
+                    hostEntry.extendedDetection = obj.native.extendedDetection === true;
                 }
             }
         } else {
@@ -996,11 +1003,27 @@ class NetTools extends utils.Adapter {
         if (!taskList[host]) {
             return;
         }
-        ping.probe(taskList[host].host, { log: this.log.debug }, (err, result) => {
+        ping.probe(taskList[host].host, { log: this.log.debug }, async (err, result) => {
             err && this.log.error(err);
 
             if (taskList.length === 0 || taskList[host] === null || taskList[host] === undefined) {
                 return;
+            }
+
+            // Devices like smartphones do not answer pings while sleeping: check presence via ARP
+            if (result && result.alive !== true && taskList[host].extendedDetection && taskList[host].mac) {
+                const task = taskList[host];
+                try {
+                    if (await this.detectPresence(task.host, task.mac)) {
+                        this.log.debug(`${task.host} does not answer ping, but was detected via ARP`);
+                        result = { ...result, alive: true, ms: null };
+                    }
+                } catch (e) {
+                    this.log.debug(`Extended detection of ${task.host} failed: ${e}`);
+                }
+                if (taskList[host] !== task) {
+                    return;
+                }
             }
 
             if (result) {
@@ -1032,6 +1055,65 @@ class NetTools extends utils.Adapter {
     }
 
     /**
+     * Detects a device that does not answer pings (e.g. a sleeping smartphone).
+     * Sends a UDP packet to port 5353 (mDNS) and tries a TCP connection to port 62078 (iOS sync service),
+     * which wakes up the WLAN of the device, and checks if the device answers ARP.
+     *
+     * @param {string} ip - IPv4 address of the device.
+     * @param {string} mac - MAC address of the device.
+     * @returns {Promise<boolean>} true if the device is present.
+     */
+    async detectPresence(ip, mac) {
+        if (!ip || !net.isIPv4(ip)) {
+            return false;
+        }
+
+        const expectedMac = normalizeMac(mac);
+
+        sendUdpPacket(ip, PRESENCE_UDP_PORT);
+        // A TCP answer (connected or refused) proves that a device with this IP is present.
+        // Check the MAC, the IP may belong to another device by now.
+        if (await tcpAnswers(ip, PRESENCE_TCP_PORT, 1000)) {
+            const neighbour = os.platform() === 'linux' ? await getNeighbour(ip) : null;
+            const foundMac = neighbour && neighbour.mac ? neighbour.mac : await arp.toMAC(ip);
+            return !foundMac || normalizeMac(foundMac) === expectedMac;
+        }
+
+        if (os.platform() === 'linux') {
+            // Only a REACHABLE entry was confirmed just now. STALE/DELAY/PROBE entries are old and
+            // are either confirmed or set to FAILED by the kernel within a few seconds.
+            let ipCommandAvailable = true;
+            const end = Date.now() + PRESENCE_ARP_TIMEOUT;
+            while (Date.now() < end && !isStopping) {
+                const neighbour = await getNeighbour(ip);
+                if (neighbour === null) {
+                    ipCommandAvailable = false;
+                    break;
+                }
+                // no entry: not in a local subnet; FAILED: no ARP answer. INCOMPLETE: request still running
+                if (!neighbour.state || neighbour.state === 'FAILED') {
+                    return false;
+                }
+                if (neighbour.mac && normalizeMac(neighbour.mac) !== expectedMac) {
+                    return false;
+                }
+                if (neighbour.state === 'REACHABLE' || neighbour.state === 'PERMANENT') {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            if (ipCommandAvailable) {
+                return false;
+            }
+        }
+
+        // Other platforms or no "ip" command: check the ARP table (entries may be outdated for some time)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const foundMac = await arp.toMAC(ip);
+        return !!foundMac && normalizeMac(foundMac) === expectedMac;
+    }
+
+    /**
      * Prepare objects for host
      *
      * @param {object} config - config object
@@ -1055,6 +1137,7 @@ class NetTools extends utils.Adapter {
                 retries: config.retries ? config.retries : 0,
                 retryCounter: 0,
                 wakeWithIp: config.wakeWithIp ? config.wakeWithIp : false,
+                extendedDetection: config.extendedDetection === true,
                 stateAlive: stateAliveID,
                 stateTime: stateTimeID,
                 stateRps: stateRpsID,
@@ -1146,6 +1229,76 @@ function sendMagicPacket(mac, address) {
                 reject(err);
             },
         );
+    });
+}
+
+/**
+ * Sends a small UDP packet, errors are ignored.
+ *
+ * @param {string} ip - Target IP.
+ * @param {number} port - Target port.
+ */
+function sendUdpPacket(ip, port) {
+    try {
+        const socket = dgram.createSocket('udp4');
+        socket.on('error', () => socket.close());
+        socket.send(Buffer.from([0]), port, ip, () => socket.close());
+    } catch {
+        // ignore
+    }
+}
+
+/**
+ * Checks if a host answers a TCP connection attempt (connected or refused).
+ *
+ * @param {string} ip - Target IP.
+ * @param {number} port - Target port.
+ * @param {number} timeout - Timeout in ms.
+ * @returns {Promise<boolean>} true if the host answered.
+ */
+function tcpAnswers(ip, port, timeout) {
+    return new Promise(resolve => {
+        const socket = new net.Socket();
+        let done = false;
+        const finish = answered => {
+            if (!done) {
+                done = true;
+                socket.destroy();
+                resolve(answered);
+            }
+        };
+        socket.setTimeout(timeout);
+        socket.once('connect', () => finish(true));
+        socket.once('timeout', () => finish(false));
+        socket.once('error', err => finish(err && err.code === 'ECONNREFUSED'));
+        socket.connect(port, ip);
+    });
+}
+
+/**
+ * Reads the neighbour (ARP) entry of an IP with "ip neigh show" (Linux).
+ *
+ * @param {string} ip - IPv4 address.
+ * @returns {Promise<{state: string, mac: string} | null>} Entry (state is '' if there is none) or null if the command is not available.
+ */
+function getNeighbour(ip) {
+    return new Promise(resolve => {
+        execFile('ip', ['neigh', 'show', ip], { timeout: 2000 }, (err, stdout) => {
+            if (err) {
+                resolve(null);
+                return;
+            }
+            const line = String(stdout)
+                .split('\n')
+                .find(l => l.trim().startsWith(`${ip} `));
+            if (!line) {
+                resolve({ state: '', mac: '' });
+                return;
+            }
+            const macMatch = line.match(/lladdr\s+([0-9a-fA-F:]+)/);
+            const tokens = line.trim().split(/\s+/);
+            resolve({ state: tokens[tokens.length - 1].toUpperCase(), mac: macMatch ? macMatch[1] : '' });
+        });
     });
 }
 
