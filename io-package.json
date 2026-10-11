@@ -274,6 +274,31 @@
         "name": "Information"
       },
       "native": {}
+    },
+    {
+      "_id": "info.devices",
+      "type": "state",
+      "common": {
+        "name": {
+          "en": "Devices found by net-tools",
+          "de": "Von net-tools gefundene Geräte",
+          "ru": "Устройства, найденные net-tools",
+          "pt": "Dispositivos encontrados pelo net-tools",
+          "nl": "Apparaten gevonden door net-tools",
+          "fr": "Appareils trouvés par net-tools",
+          "it": "Dispositivi trovati da net-tools",
+          "es": "Dispositivos encontrados por net-tools",
+          "pl": "Urządzenia znalezione przez net-tools",
+          "zh-cn": "net-tools 发现的设备",
+          "uk": "Пристрої, знайдені net-tools"
+        },
+        "read": true,
+        "write": false,
+        "role": "json",
+        "type": "string",
+        "def": "[]"
+      },
+      "native": {}
     }
   ]
 }

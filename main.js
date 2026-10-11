@@ -25,6 +25,7 @@ let timer = null;
 let isStopping = false;
 let discoverTimeout = null;
 let pingTimeout = null;
+let deviceListTimeout = null;
 /**
  *
  *
@@ -116,6 +117,7 @@ class NetTools extends utils.Adapter {
 
             await this.prepareObjectsByConfig();
             this.pingAll();
+            await this.updateDeviceList();
 
             if (this.config.autoSearch === true && this.config.searchSchedule !== '') {
                 this.log.info('Auto search is enabled');
@@ -150,6 +152,10 @@ class NetTools extends utils.Adapter {
                 clearTimeout(discoverTimeout);
                 discoverTimeout = null;
             }
+            if (deviceListTimeout) {
+                clearTimeout(deviceListTimeout);
+                deviceListTimeout = null;
+            }
             if (pingTimeout) {
                 clearTimeout(pingTimeout);
                 pingTimeout = null;
@@ -174,6 +180,11 @@ class NetTools extends utils.Adapter {
      * @param {ioBroker.Object | null | undefined} obj
      */
     onObjectChange(id, obj) {
+        // A device was added, changed or deleted: update the device list for Blockly
+        if (id.startsWith(`${this.namespace}.`) && !id.slice(this.namespace.length + 1).includes('.')) {
+            this.scheduleDeviceListUpdate();
+        }
+
         if (obj) {
             // The object was changed
 
@@ -351,6 +362,54 @@ class NetTools extends utils.Adapter {
                 }
             }
         }
+    }
+
+    /**
+     * Updates the device list (used by the Blockly blocks) after a short delay,
+     * so multiple object changes in a row result in one update.
+     */
+    scheduleDeviceListUpdate() {
+        if (deviceListTimeout) {
+            clearTimeout(deviceListTimeout);
+        }
+        deviceListTimeout = setTimeout(() => {
+            deviceListTimeout = null;
+            this.updateDeviceList().catch(err => this.log.warn(`Cannot update device list: ${err}`));
+        }, 2000);
+    }
+
+    /**
+     * Writes all devices (id, name, ip, mac) as JSON to the state info.devices.
+     */
+    async updateDeviceList() {
+        const devices = await this.getDevicesAsync();
+        const list = devices
+            .filter(d => d && d._id && !d._id.endsWith('.localhost'))
+            .map(d => {
+                const name = d.common && d.common.name;
+                return {
+                    id: d._id,
+                    // keep translated names as object, Blockly shows the language of the editor
+                    name: name && typeof name === 'object' ? name : name ? String(name) : '',
+                    ip: (d.native && d.native.ip) || '',
+                    mac: (d.native && d.native.mac) || '',
+                };
+            })
+            .sort((a, b) => netToolsSortName(a.name).localeCompare(netToolsSortName(b.name)));
+
+        await this.setObjectNotExistsAsync('info.devices', {
+            type: 'state',
+            common: {
+                name: 'Devices found by net-tools',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: false,
+                def: '[]',
+            },
+            native: {},
+        });
+        await this.setStateAsync('info.devices', { val: JSON.stringify(list), ack: true });
     }
 
     /**
@@ -1088,6 +1147,19 @@ function sendMagicPacket(mac, address) {
             },
         );
     });
+}
+
+/**
+ * Returns a device name as string for sorting.
+ *
+ * @param {string | Record<string, string>} name - Name or translated name.
+ * @returns {string} Name.
+ */
+function netToolsSortName(name) {
+    if (name && typeof name === 'object') {
+        return String(name.en || Object.values(name)[0] || '');
+    }
+    return String(name || '');
 }
 
 /**

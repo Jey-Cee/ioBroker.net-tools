@@ -449,50 +449,102 @@ Blockly.JavaScript['net-tools_wol'] = function (block) {
 
 // --- Device -----------------------------------------------------------------
 /**
- * Returns the display name of an object.
- *
- * @param {object} obj - ioBroker object.
- * @returns {string} Name.
+ * Devices per instance, read from the state net-tools.X.info.devices.
+ * The object cache of the editor (main.objects) only contains instances and scripts, not devices.
  */
-function netToolsObjectName(obj) {
-    const name = obj && obj.common && obj.common.name;
-    if (name && typeof name === 'object') {
-        return name[systemLang] || name.en || '';
+const netToolsDeviceCache = {};
+
+/**
+ * Returns the numbers of all net-tools instances known to the editor.
+ *
+ * @returns {string[]} Instance numbers.
+ */
+function netToolsInstanceNumbers() {
+    const numbers = [];
+    if (typeof main !== 'undefined' && Array.isArray(main.instances)) {
+        for (const id of main.instances) {
+            const m = String(id).match(/^system\.adapter\.net-tools\.(\d+)$/);
+            if (m) {
+                numbers.push(m[1]);
+            }
+        }
     }
-    return name ? String(name) : '';
+    return numbers.length ? numbers : ['0'];
 }
 
 /**
- * Returns the dropdown options with all devices found by net-tools from the object cache of the editor.
+ * Loads the device lists of all instances in the background.
  *
- * @param {string} [keepId] - Device id that must be part of the options even if it is not in the cache.
+ * @param {Function} [onLoaded] - Called after a list was loaded.
+ */
+function netToolsLoadDevices(onLoaded) {
+    if (typeof main === 'undefined' || typeof main.getState !== 'function') {
+        return;
+    }
+    for (const instance of netToolsInstanceNumbers()) {
+        main.getState(`net-tools.${instance}.info.devices`, (err, state) => {
+            if (err || !state || typeof state.val !== 'string') {
+                return;
+            }
+            try {
+                const list = JSON.parse(state.val);
+                if (Array.isArray(list)) {
+                    netToolsDeviceCache[instance] = list;
+                    onLoaded && onLoaded();
+                }
+            } catch {
+                // ignore invalid JSON
+            }
+        });
+    }
+}
+
+/**
+ * Refreshes the labels of all device blocks in the workspace after the device list was loaded.
+ */
+function netToolsRefreshDeviceBlocks() {
+    try {
+        const workspace = Blockly.getMainWorkspace && Blockly.getMainWorkspace();
+        if (!workspace) {
+            return;
+        }
+        for (const block of workspace.getBlocksByType('net-tools_device', false)) {
+            const field = block.getField('DEVICE');
+            if (field) {
+                field.setValue(field.getValue());
+                field.forceRerender && field.forceRerender();
+            }
+        }
+    } catch {
+        // labels are refreshed the next time the dropdown is opened
+    }
+}
+
+/**
+ * Returns the dropdown options with all devices found by net-tools.
+ *
+ * @param {string} [keepId] - Device id that must be part of the options even if it is not in the list.
  * @returns {Array<Array<string>>} Dropdown options.
  */
 function netToolsDevices(keepId) {
-    const options = [];
-    const objects = typeof main !== 'undefined' && main.objects ? main.objects : {};
-    const list = Array.isArray(objects) ? objects : Object.keys(objects).map(id => objects[id]);
-    const instances = new Set();
+    const instances = Object.keys(netToolsDeviceCache).sort();
+    const result = [];
 
-    for (const obj of list) {
-        if (!obj || obj.type !== 'device' || typeof obj._id !== 'string') {
-            continue;
+    for (const instance of instances) {
+        for (const device of netToolsDeviceCache[instance]) {
+            if (!device || typeof device.id !== 'string') {
+                continue;
+            }
+            const prefix = instances.length > 1 ? `[${instance}] ` : '';
+            let name = device.name;
+            if (name && typeof name === 'object') {
+                name = name[systemLang] || name.en || '';
+            }
+            const label = name || device.id.split('.').pop();
+            const details = [device.ip, device.mac].filter(Boolean).join(', ');
+            result.push([`${prefix}${label}${details ? ` (${details})` : ''}`, device.id]);
         }
-        const m = obj._id.match(/^net-tools\.(\d+)\.([^.]+)$/);
-        if (!m || m[2] === 'localhost') {
-            continue;
-        }
-        instances.add(m[1]);
-        const native = obj.native || {};
-        const details = [native.ip, native.mac].filter(Boolean).join(', ');
-        options.push({ id: obj._id, instance: m[1], label: netToolsObjectName(obj) || m[2], details });
     }
-
-    options.sort((a, b) => a.label.localeCompare(b.label));
-    const result = options.map(o => {
-        const prefix = instances.size > 1 ? `[${o.instance}] ` : '';
-        return [`${prefix}${o.label}${o.details ? ` (${o.details})` : ''}`, o.id];
-    });
 
     if (keepId && !result.find(o => o[1] === keepId)) {
         result.push([keepId, keepId]);
@@ -503,10 +555,16 @@ function netToolsDevices(keepId) {
     return result;
 }
 
+// load the device lists as soon as the blocks are loaded
+netToolsLoadDevices();
+
 Blockly.Sendto.blocks['net-tools_device'] = '<block type="net-tools_device"><field name="ATTR">ip</field></block>';
 
 Blockly.Blocks['net-tools_device'] = {
     init: function () {
+        // reload the device lists, so new devices show up
+        netToolsLoadDevices(netToolsRefreshDeviceBlocks);
+
         let pendingValue = null;
         const deviceField = new Blockly.FieldDropdown(function () {
             // keep a stored device selectable, even if the object cache is not loaded (yet)
