@@ -1,5 +1,19 @@
 {
     "net-tools adapter settings": "net-tools的适配器设置",
     "Ping Interval": "Ping 间隔",
-    "Port Scan": "启动时对本地主机运行端口扫描"
+    "Port Scan": "启动时对本地主机运行端口扫描",
+    "Port List": "要扫描的端口列表",
+    "Settings": "设置",
+    "Devices": "设备",
+    "License Key": "许可证密钥",
+    "License Key Help": "请在此输入您的许可证密钥。您可以在 ALL SMART 商店购买。",
+    "interfaceSelectInfo": "选择用于搜索设备的网络接口。",
+    "startIp": "起始 IP 地址",
+    "endIp": "结束 IP 地址",
+    "descriptionIpRange": "如果不输入自定义 IP 范围，Net Tools 将根据接口配置确定范围。<br>如果 IP 范围取自接口配置，扫描过程可能需要很长时间。",
+    "autoSearch": "自动发现设备",
+    "searchSchedule": "搜索计划",
+    "ignore list text": "注意：此列表中的所有 MAC 地址在自动发现时都会被忽略。",
+    "justNotify": "仅在管理界面中显示已发现设备的通知。",
+    "Ignore List": "忽略列表"
 }

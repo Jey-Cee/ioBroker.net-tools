@@ -1,5 +1,19 @@
 {
     "net-tools adapter settings": "Paramètres d'adaptateur pour net-tools",
     "Ping Interval": "Intervalle de ping",
-    "Port Scan": "Exécutez l'analyse de port pour localhost au démarrage"
+    "Port Scan": "Exécutez l'analyse de port pour localhost au démarrage",
+    "Port List": "Liste des ports à scanner",
+    "Settings": "Paramètres",
+    "Devices": "Appareils",
+    "License Key": "Clé de licence",
+    "License Key Help": "Saisissez ici votre clé de licence. Vous pouvez en acheter une dans la boutique ALL SMART.",
+    "interfaceSelectInfo": "Sélectionnez l'interface qui sera utilisée pour rechercher des appareils.",
+    "startIp": "Adresse IP de début",
+    "endIp": "Adresse IP de fin",
+    "descriptionIpRange": "Si vous ne saisissez pas de plage IP personnalisée, Net Tools la déterminera à partir de la configuration de l'interface.<br>Si la plage IP est tirée de la configuration de l'interface, l'analyse peut prendre beaucoup de temps.",
+    "autoSearch": "Détecter automatiquement les appareils",
+    "searchSchedule": "Planification de la recherche",
+    "ignore list text": "Remarque : chaque adresse MAC de cette liste sera ignorée lors de la détection automatique.",
+    "justNotify": "Afficher uniquement une notification dans l'admin pour les appareils trouvés.",
+    "Ignore List": "Liste d'exclusion"
 }

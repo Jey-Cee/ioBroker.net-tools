@@ -1,5 +1,19 @@
 {
     "net-tools adapter settings": "Ustawienia adaptera dla net-tools",
     "Ping Interval": "Interwał pingowania",
-    "Port Scan": "Uruchom skanowanie portów dla hosta lokalnego przy uruchomieniu"
+    "Port Scan": "Uruchom skanowanie portów dla hosta lokalnego przy uruchomieniu",
+    "Port List": "Lista portów do skanowania",
+    "Settings": "Ustawienia",
+    "Devices": "Urządzenia",
+    "License Key": "Klucz licencyjny",
+    "License Key Help": "Wprowadź tutaj swój klucz licencyjny. Możesz go kupić w sklepie ALL SMART.",
+    "interfaceSelectInfo": "Wybierz interfejs, który będzie używany do wyszukiwania urządzeń.",
+    "startIp": "Początkowy adres IP",
+    "endIp": "Końcowy adres IP",
+    "descriptionIpRange": "Jeśli nie podasz własnego zakresu IP, Net Tools ustali go na podstawie konfiguracji interfejsu.<br>Jeśli zakres IP zostanie pobrany z konfiguracji interfejsu, skanowanie może trwać bardzo długo.",
+    "autoSearch": "Automatyczne wykrywanie urządzeń",
+    "searchSchedule": "Harmonogram wyszukiwania",
+    "ignore list text": "Uwaga: każdy adres MAC z tej listy będzie ignorowany podczas automatycznego wykrywania.",
+    "justNotify": "Pokazuj tylko powiadomienie w adminie o znalezionych urządzeniach.",
+    "Ignore List": "Lista ignorowanych"
 }

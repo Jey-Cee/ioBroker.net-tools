@@ -1,5 +1,19 @@
 {
     "net-tools adapter settings": "Adapterinstellingen voor net-tools",
     "Ping Interval": "Ping-interval",
-    "Port Scan": "Voer bij het starten een poortscan uit voor localhost"
+    "Port Scan": "Voer bij het starten een poortscan uit voor localhost",
+    "Port List": "Lijst met te scannen poorten",
+    "Settings": "Instellingen",
+    "Devices": "Apparaten",
+    "License Key": "Licentiesleutel",
+    "License Key Help": "Voer hier uw licentiesleutel in. U kunt er een kopen in de ALL SMART-winkel.",
+    "interfaceSelectInfo": "Selecteer de interface die wordt gebruikt om naar apparaten te zoeken.",
+    "startIp": "Start-IP-adres",
+    "endIp": "Eind-IP-adres",
+    "descriptionIpRange": "Als u geen eigen IP-bereik invoert, bepaalt Net Tools dit aan de hand van de interfaceconfiguratie.<br>Als het IP-bereik uit de interfaceconfiguratie wordt overgenomen, kan het scannen lang duren.",
+    "autoSearch": "Apparaten automatisch detecteren",
+    "searchSchedule": "Tijdschema voor het zoeken",
+    "ignore list text": "Let op: elk MAC-adres in deze lijst wordt bij automatische detectie genegeerd.",
+    "justNotify": "Alleen een melding in de admin tonen voor gevonden apparaten.",
+    "Ignore List": "Negeerlijst"
 }

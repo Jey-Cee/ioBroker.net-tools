@@ -14,5 +14,6 @@
 	"autoSearch": "Auto discover devices",
 	"searchSchedule": "Time schedule for the search",
 	"ignore list text": "Note: Every MAC address on this list will be ignored on autodiscovery.",
-	"justNotify": "Show only notification for found devices in admin."
+	"justNotify": "Show only notification for found devices in admin.",
+	"Ignore List": "Ignore list"
 }

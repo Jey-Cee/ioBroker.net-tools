@@ -128,6 +128,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 ## Changelog
 
 ### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
 - (copilot) Adapter requires node.js >= 22 now
 - (iobroker-bot) Adapter requires node.js >= 20 now.
 - (Jey Cee) Migrate from oui to oui-data
@@ -216,6 +217,8 @@ Attribution-NonCommercial 4.0 (CC BY-NC 4.0)
 Copyright (c) 2025-2026 Jey Cee <iobroker@all-smart.net>
 
 http://creativecommons.org/licenses/by-nc/4.0/
+
+The complete license text can be found in the [LICENSE](LICENSE) file.
 
 Short content:
 Licensees may copy, distribute, display and perform the work and make derivative works based on it only if they give the author or licensor the credits in the manner specified by these.
