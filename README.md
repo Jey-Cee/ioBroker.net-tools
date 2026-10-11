@@ -83,6 +83,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - **Ping (net-tools)** – pings an IP address or host name
 - **Port scan (net-tools)** – scans the ports of an IP address or host name
 - **Wake-on-LAN (net-tools)** – sends Wake-on-LAN packets to a MAC address
+- **net-tools device** – selects a device found by net-tools and returns its IP or MAC address. Can be plugged into the IP/MAC inputs of the blocks above. The IP is read when the script runs, so IP changes are taken into account.
 - **net-tools result** – returns reachable, response time, open ports, host or error of the surrounding ping or port scan block. Use it only inside "then" of these blocks.
 
 ---
@@ -105,6 +106,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - (Jey Cee) Wake-on-LAN: also send to the broadcast address of the device subnet, log sent packets, no endless retries on errors
 - (Jey Cee) Add sendTo command portScan
 - (Jey Cee) Add Blockly blocks for ping, port scan and Wake-on-LAN
+- (Jey Cee) Add Blockly block to select a device found by net-tools
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**

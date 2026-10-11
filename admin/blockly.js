@@ -240,6 +240,71 @@ Blockly.Words['net-tools_result_tooltip'] = {
     uk: 'Результат зовнішнього блоку пінгу або сканування портів net-tools. Дійсний лише всередині "потім".',
     'zh-cn': '外层 net-tools Ping 或端口扫描块的结果。仅在"然后"中有效。',
 };
+Blockly.Words['net-tools_device'] = {
+    en: 'net-tools device',
+    de: 'net-tools Gerät',
+    ru: 'устройство net-tools',
+    pt: 'dispositivo net-tools',
+    nl: 'net-tools apparaat',
+    fr: 'appareil net-tools',
+    it: 'dispositivo net-tools',
+    es: 'dispositivo net-tools',
+    pl: 'urządzenie net-tools',
+    uk: 'пристрій net-tools',
+    'zh-cn': 'net-tools 设备',
+};
+Blockly.Words['net-tools_device_ip'] = {
+    en: 'IP',
+    de: 'IP',
+    ru: 'IP',
+    pt: 'IP',
+    nl: 'IP',
+    fr: 'IP',
+    it: 'IP',
+    es: 'IP',
+    pl: 'IP',
+    uk: 'IP',
+    'zh-cn': 'IP',
+};
+Blockly.Words['net-tools_device_mac'] = {
+    en: 'MAC',
+    de: 'MAC',
+    ru: 'MAC',
+    pt: 'MAC',
+    nl: 'MAC',
+    fr: 'MAC',
+    it: 'MAC',
+    es: 'MAC',
+    pl: 'MAC',
+    uk: 'MAC',
+    'zh-cn': 'MAC',
+};
+Blockly.Words['net-tools_device_none'] = {
+    en: '- no devices found -',
+    de: '- keine Geräte gefunden -',
+    ru: '- устройства не найдены -',
+    pt: '- nenhum dispositivo encontrado -',
+    nl: '- geen apparaten gevonden -',
+    fr: '- aucun appareil trouvé -',
+    it: '- nessun dispositivo trovato -',
+    es: '- no se encontraron dispositivos -',
+    pl: '- nie znaleziono urządzeń -',
+    uk: '- пристрої не знайдено -',
+    'zh-cn': '- 未找到设备 -',
+};
+Blockly.Words['net-tools_device_tooltip'] = {
+    en: 'IP or MAC address of a device found by net-tools. The IP is read when the script runs, so IP changes are taken into account.',
+    de: 'IP- oder MAC-Adresse eines von net-tools gefundenen Geräts. Die IP wird beim Ausführen des Skripts gelesen, IP-Änderungen werden also berücksichtigt.',
+    ru: 'IP- или MAC-адрес устройства, найденного net-tools. IP считывается при выполнении скрипта, поэтому изменения IP учитываются.',
+    pt: 'Endereço IP ou MAC de um dispositivo encontrado pelo net-tools. O IP é lido quando o script é executado, portanto as alterações de IP são consideradas.',
+    nl: 'IP- of MAC-adres van een apparaat dat door net-tools is gevonden. Het IP wordt gelezen wanneer het script wordt uitgevoerd, dus IP-wijzigingen worden meegenomen.',
+    fr: "Adresse IP ou MAC d'un appareil trouvé par net-tools. L'IP est lue à l'exécution du script, les changements d'IP sont donc pris en compte.",
+    it: "Indirizzo IP o MAC di un dispositivo trovato da net-tools. L'IP viene letto durante l'esecuzione dello script, quindi le modifiche dell'IP vengono considerate.",
+    es: 'Dirección IP o MAC de un dispositivo encontrado por net-tools. La IP se lee al ejecutar el script, por lo que se tienen en cuenta los cambios de IP.',
+    pl: 'Adres IP lub MAC urządzenia znalezionego przez net-tools. IP jest odczytywane podczas uruchamiania skryptu, więc zmiany IP są uwzględniane.',
+    uk: 'IP- або MAC-адреса пристрою, знайденого net-tools. IP зчитується під час виконання скрипту, тому зміни IP враховуються.',
+    'zh-cn': 'net-tools 发现的设备的 IP 或 MAC 地址。IP 在脚本运行时读取，因此会考虑 IP 的变化。',
+};
 Blockly.Words['net-tools_help'] = {
     en: 'https://github.com/Jey-Cee/ioBroker.net-tools/blob/master/README.md',
 };
@@ -380,6 +445,109 @@ Blockly.JavaScript['net-tools_wol'] = function (block) {
     const instance = block.getFieldValue('INSTANCE');
     const mac = Blockly.JavaScript.valueToCode(block, 'MAC', Blockly.JavaScript.ORDER_ATOMIC) || "''";
     return `sendTo('net-tools${instance}', 'wake', ${mac});\n`;
+};
+
+// --- Device -----------------------------------------------------------------
+/**
+ * Returns the display name of an object.
+ *
+ * @param {object} obj - ioBroker object.
+ * @returns {string} Name.
+ */
+function netToolsObjectName(obj) {
+    const name = obj && obj.common && obj.common.name;
+    if (name && typeof name === 'object') {
+        return name[systemLang] || name.en || '';
+    }
+    return name ? String(name) : '';
+}
+
+/**
+ * Returns the dropdown options with all devices found by net-tools from the object cache of the editor.
+ *
+ * @param {string} [keepId] - Device id that must be part of the options even if it is not in the cache.
+ * @returns {Array<Array<string>>} Dropdown options.
+ */
+function netToolsDevices(keepId) {
+    const options = [];
+    const objects = typeof main !== 'undefined' && main.objects ? main.objects : {};
+    const list = Array.isArray(objects) ? objects : Object.keys(objects).map(id => objects[id]);
+    const instances = new Set();
+
+    for (const obj of list) {
+        if (!obj || obj.type !== 'device' || typeof obj._id !== 'string') {
+            continue;
+        }
+        const m = obj._id.match(/^net-tools\.(\d+)\.([^.]+)$/);
+        if (!m || m[2] === 'localhost') {
+            continue;
+        }
+        instances.add(m[1]);
+        const native = obj.native || {};
+        const details = [native.ip, native.mac].filter(Boolean).join(', ');
+        options.push({ id: obj._id, instance: m[1], label: netToolsObjectName(obj) || m[2], details });
+    }
+
+    options.sort((a, b) => a.label.localeCompare(b.label));
+    const result = options.map(o => {
+        const prefix = instances.size > 1 ? `[${o.instance}] ` : '';
+        return [`${prefix}${o.label}${o.details ? ` (${o.details})` : ''}`, o.id];
+    });
+
+    if (keepId && !result.find(o => o[1] === keepId)) {
+        result.push([keepId, keepId]);
+    }
+    if (!result.length) {
+        result.push([Blockly.Translate('net-tools_device_none'), '']);
+    }
+    return result;
+}
+
+Blockly.Sendto.blocks['net-tools_device'] = '<block type="net-tools_device"><field name="ATTR">ip</field></block>';
+
+Blockly.Blocks['net-tools_device'] = {
+    init: function () {
+        let pendingValue = null;
+        const deviceField = new Blockly.FieldDropdown(function () {
+            // keep a stored device selectable, even if the object cache is not loaded (yet)
+            const current = typeof this.getValue === 'function' ? this.getValue() : null;
+            return netToolsDevices(pendingValue || current);
+        });
+        // Blockly would reset a stored value that is not part of the options to the first option
+        if (typeof deviceField.doClassValidator_ === 'function') {
+            deviceField.doClassValidator_ = function (value) {
+                pendingValue = value;
+                return value;
+            };
+        }
+
+        this.appendDummyInput()
+            .appendField(Blockly.Translate('net-tools_device'))
+            .appendField(deviceField, 'DEVICE')
+            .appendField(
+                new Blockly.FieldDropdown([
+                    [Blockly.Translate('net-tools_device_ip'), 'ip'],
+                    [Blockly.Translate('net-tools_device_mac'), 'mac'],
+                ]),
+                'ATTR',
+            );
+
+        this.setInputsInline(true);
+        this.setOutput(true, 'String');
+        this.setColour(Blockly.Sendto.HUE);
+        this.setTooltip(Blockly.Translate('net-tools_device_tooltip'));
+        this.setHelpUrl(Blockly.Translate('net-tools_help'));
+    },
+};
+
+Blockly.JavaScript['net-tools_device'] = function (block) {
+    const id = String(block.getFieldValue('DEVICE') || '').replace(/[^\w.\-:]/g, '');
+    const attr = block.getFieldValue('ATTR') === 'mac' ? 'mac' : 'ip';
+    if (!id) {
+        return ["''", Blockly.JavaScript.ORDER_ATOMIC];
+    }
+    // read at runtime, so a changed IP is used
+    return [`(((getObject('${id}') || {}).native || {}).${attr} || '')`, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
 // --- Result -----------------------------------------------------------------
