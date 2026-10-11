@@ -41,6 +41,20 @@ and then checks whether the device answers ARP with its MAC address. No root rig
 - On Linux the state of the ARP entry is checked (`ip neigh`), so outdated entries are not counted. On other systems the ARP table is used, which may show a device as present for some time after it left.
 - iPhone: set "Private Wi-Fi Address" for your home network to "Fixed" or "Off". With "Rotating" the MAC address changes and the device can no longer be detected.
 
+#### Service monitoring (TCP ping)
+
+In the settings of a device (device manager) you can add services in the table "Services (TCP ports)". Each entry has its own settings:
+
+| Column | Meaning |
+|---|---|
+| Port | TCP port of the service, e.g. `80`, `443`, `1883` |
+| Interval (s) | How often the port is checked. Empty = ping interval of the device, minimum 5 s |
+| Tolerance (failures) | Number of failed checks in a row that are ignored before the service is shown as not reachable. `0` = immediately |
+
+net-tools tries to establish a TCP connection to the port (timeout 2 s), independent of the ping result.
+The state `net-tools.X.<device>.services.port_<port>` is `true` if the connection was established and `false` after more than "Tolerance" failed checks in a row.
+States of ports that are removed from the table are deleted. Changes take effect immediately.
+
 ### Wake-on-LAN
 
 Set the wol object to true and 3 WOL packages are sent, with a pause of 750ms, to your device.
@@ -120,6 +134,7 @@ The adapter provides Blockly blocks in the "SendTo" category of the JavaScript a
 - (Jey Cee) Add Blockly block to select a device found by net-tools
 - (Jey Cee) Add extended detection for devices that do not answer pings while sleeping (e.g. iPhone)
 - (Jey Cee) Fix changed device settings (Wake-on-LAN with IP) not being applied until restart
+- (Jey Cee) Add service monitoring via TCP ping for multiple ports per device, with interval and tolerance per port
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**

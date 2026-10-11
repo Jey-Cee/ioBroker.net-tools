@@ -52,6 +52,14 @@ let deviceListTimeout = null;
 let taskList = [];
 let cronJob = null;
 
+const SERVICE_TIMEOUT = 2000;
+const SERVICE_MIN_INTERVAL = 5;
+
+/** Running service checks per device channel: Map<channel, Map<port, {timer, failures}>> */
+const serviceChecks = new Map();
+/** Pending updates of the service states per device channel */
+const serviceSyncQueue = new Map();
+
 const PRESENCE_UDP_PORT = 5353;
 const PRESENCE_TCP_PORT = 62078;
 const PRESENCE_ARP_TIMEOUT = 7000;
@@ -162,6 +170,9 @@ class NetTools extends utils.Adapter {
                 clearTimeout(deviceListTimeout);
                 deviceListTimeout = null;
             }
+            for (const channel of [...serviceChecks.keys()]) {
+                this.stopServiceChecks(channel);
+            }
             if (pingTimeout) {
                 clearTimeout(pingTimeout);
                 pingTimeout = null;
@@ -212,6 +223,11 @@ class NetTools extends utils.Adapter {
                     hostEntry.retries = obj.native.retries;
                     hostEntry.wakeWithIp = obj.native.wakeWithIp === true;
                     hostEntry.extendedDetection = obj.native.extendedDetection === true;
+                    const services = parseServiceList(obj.native.services, hostEntry.pingInterval);
+                    if (JSON.stringify(services) !== JSON.stringify(hostEntry.services || [])) {
+                        hostEntry.services = services;
+                        this.applyServiceSettings(hostEntry);
+                    }
                 }
             }
         } else {
@@ -1114,6 +1130,178 @@ class NetTools extends utils.Adapter {
     }
 
     /**
+     * Updates the service states and restarts the service checks of a device after its settings changed.
+     * Runs one after another per device, always with the current settings, so fast changes cannot overlap.
+     *
+     * @param {object} task - Entry of the taskList.
+     */
+    applyServiceSettings(task) {
+        const channel = task.stateAlive.channel;
+        const previous = serviceSyncQueue.get(channel) || Promise.resolve();
+        const next = previous
+            .then(async () => {
+                await this.syncServiceStates(
+                    channel,
+                    task.services.map(s => s.port),
+                );
+                this.startServiceChecks(task);
+            })
+            .catch(err => this.log.warn(`Cannot update service states of ${channel}: ${err}`))
+            .finally(() => {
+                if (serviceSyncQueue.get(channel) === next) {
+                    serviceSyncQueue.delete(channel);
+                }
+            });
+        serviceSyncQueue.set(channel, next);
+    }
+
+    /**
+     * Starts the TCP checks of all services (ports) of a device, each with its own interval.
+     * Running checks of the device are stopped before.
+     *
+     * @param {object} task - Entry of the taskList.
+     */
+    startServiceChecks(task) {
+        const channel = task.stateAlive.channel;
+        this.stopServiceChecks(channel);
+        if (isStopping || !task.services || !task.services.length) {
+            return;
+        }
+        const checks = new Map();
+        serviceChecks.set(channel, checks);
+        for (const service of task.services) {
+            const check = { timer: null, failures: 0 };
+            checks.set(service.port, check);
+            this.runServiceCheck(task, service, check, checks);
+        }
+    }
+
+    /**
+     * Stops the TCP checks of a device.
+     *
+     * @param {string} channel - Device id without namespace.
+     */
+    stopServiceChecks(channel) {
+        const checks = serviceChecks.get(channel);
+        if (checks) {
+            for (const check of checks.values()) {
+                check.timer && clearTimeout(check.timer);
+            }
+            serviceChecks.delete(channel);
+        }
+    }
+
+    /**
+     * Checks one service (port) and schedules the next check.
+     * The state is set to false only after more than `retries` failed checks in a row.
+     *
+     * @param {object} task - Entry of the taskList.
+     * @param {{port: number, interval: number, retries: number}} service - Service settings.
+     * @param {{timer: any, failures: number}} check - Runtime data of this check.
+     * @param {Map} checks - Checks of the device, used to detect a restart.
+     */
+    async runServiceCheck(task, service, check, checks) {
+        const channel = task.stateAlive.channel;
+        try {
+            const reachable = await tcpConnect(task.host, service.port, SERVICE_TIMEOUT);
+            if (isStopping || serviceChecks.get(channel) !== checks) {
+                return; // stopped or restarted in the meantime
+            }
+            let val = null;
+            if (reachable) {
+                check.failures = 0;
+                val = true;
+            } else {
+                check.failures++;
+                if (check.failures > service.retries) {
+                    val = false;
+                }
+            }
+            this.log.debug(
+                `Service ${task.host}:${service.port} ${reachable ? 'reachable' : `not reachable (${check.failures}/${service.retries + 1})`}`,
+            );
+            if (val !== null) {
+                await this.setStateAsync(`${channel}.services.port_${service.port}`, { val, ack: true });
+            }
+        } catch (err) {
+            this.log.debug(`Service check ${task.host}:${service.port} failed: ${err}`);
+        }
+        if (!isStopping && serviceChecks.get(channel) === checks) {
+            check.timer = setTimeout(() => this.runServiceCheck(task, service, check, checks), service.interval * 1000);
+        }
+    }
+
+    /**
+     * Creates the states services.port_<port> of a device and deletes the states of removed ports.
+     *
+     * @param {string} channel - Device id without namespace.
+     * @param {number[]} ports - Ports to monitor.
+     */
+    async syncServiceStates(channel, ports) {
+        const prefix = `${this.namespace}.${channel}.services`;
+        const existing = await this.getForeignObjectsAsync(`${prefix}.port_*`, 'state');
+        for (const id of Object.keys(existing || {})) {
+            const port = parseInt(id.split('port_').pop(), 10);
+            if (!ports.includes(port)) {
+                await this.delForeignObjectAsync(id);
+            }
+        }
+
+        if (!ports.length) {
+            if (await this.getForeignObjectAsync(prefix)) {
+                await this.delForeignObjectAsync(prefix);
+            }
+            return;
+        }
+
+        await this.setObjectNotExistsAsync(`${channel}.services`, {
+            type: 'channel',
+            common: {
+                name: {
+                    en: 'Services (TCP ports)',
+                    de: 'Dienste (TCP-Ports)',
+                    ru: 'Сервисы (TCP-порты)',
+                    pt: 'Serviços (portas TCP)',
+                    nl: 'Diensten (TCP-poorten)',
+                    fr: 'Services (ports TCP)',
+                    it: 'Servizi (porte TCP)',
+                    es: 'Servicios (puertos TCP)',
+                    pl: 'Usługi (porty TCP)',
+                    'zh-cn': '服务（TCP 端口）',
+                    uk: 'Сервіси (TCP-порти)',
+                },
+            },
+            native: {},
+        });
+        for (const port of ports) {
+            await this.setObjectNotExistsAsync(`${channel}.services.port_${port}`, {
+                type: 'state',
+                common: {
+                    name: {
+                        en: `Service on port ${port} reachable`,
+                        de: `Dienst auf Port ${port} erreichbar`,
+                        ru: `Сервис на порту ${port} доступен`,
+                        pt: `Serviço na porta ${port} acessível`,
+                        nl: `Dienst op poort ${port} bereikbaar`,
+                        fr: `Service sur le port ${port} joignable`,
+                        it: `Servizio sulla porta ${port} raggiungibile`,
+                        es: `Servicio en el puerto ${port} accesible`,
+                        pl: `Usługa na porcie ${port} osiągalna`,
+                        'zh-cn': `端口 ${port} 上的服务可达`,
+                        uk: `Сервіс на порту ${port} доступний`,
+                    },
+                    type: 'boolean',
+                    role: 'indicator.reachable',
+                    read: true,
+                    write: false,
+                    def: false,
+                },
+                native: { port },
+            });
+        }
+    }
+
+    /**
      * Prepare objects for host
      *
      * @param {object} config - config object
@@ -1138,6 +1326,10 @@ class NetTools extends utils.Adapter {
                 retryCounter: 0,
                 wakeWithIp: config.wakeWithIp ? config.wakeWithIp : false,
                 extendedDetection: config.extendedDetection === true,
+                services: parseServiceList(
+                    config.services,
+                    config.pingInterval ? config.pingInterval : this.config.pingInterval,
+                ),
                 stateAlive: stateAliveID,
                 stateTime: stateTimeID,
                 stateRps: stateRpsID,
@@ -1152,6 +1344,9 @@ class NetTools extends utils.Adapter {
      */
     async prepareObjectsByConfig() {
         taskList = [];
+        for (const channel of [...serviceChecks.keys()]) {
+            this.stopServiceChecks(channel);
+        }
         const objs = await this.getDevicesAsync();
 
         let devices = [];
@@ -1174,6 +1369,18 @@ class NetTools extends utils.Adapter {
                 taskList.push(config.ping_task);
             }
         });
+
+        for (const task of taskList) {
+            try {
+                await this.syncServiceStates(
+                    task.stateAlive.channel,
+                    task.services.map(s => s.port),
+                );
+                this.startServiceChecks(task);
+            } catch (err) {
+                this.log.warn(`Cannot update service states of ${task.stateAlive.channel}: ${err}`);
+            }
+        }
 
         return true;
     }
@@ -1229,6 +1436,64 @@ function sendMagicPacket(mac, address) {
                 reject(err);
             },
         );
+    });
+}
+
+/**
+ * Normalizes the service (port) settings of a device.
+ *
+ * @param {Array<{port: any, interval?: any, retries?: any}> | undefined} value - Service settings.
+ * @param {number} defaultInterval - Interval in seconds if none is set (ping interval of the device).
+ * @returns {Array<{port: number, interval: number, retries: number}>} Valid services, unique per port, sorted by port.
+ */
+function parseServiceList(value, defaultInterval) {
+    const byPort = new Map();
+    for (const entry of Array.isArray(value) ? value : []) {
+        const port = parseInt(entry && entry.port, 10);
+        if (!Number.isInteger(port) || port < 1 || port > 65535) {
+            continue;
+        }
+        let interval = parseInt(entry.interval, 10);
+        if (!Number.isInteger(interval) || interval <= 0) {
+            interval = parseInt(defaultInterval, 10) || 60;
+        }
+        let retries = parseInt(entry.retries, 10);
+        if (!Number.isInteger(retries) || retries < 0) {
+            retries = 0;
+        }
+        byPort.set(port, { port, interval: Math.max(interval, SERVICE_MIN_INTERVAL), retries });
+    }
+    return [...byPort.values()].sort((a, b) => a.port - b.port);
+}
+
+/**
+ * Checks if a TCP connection to a port can be established.
+ *
+ * @param {string} host - Target IP or host name.
+ * @param {number} port - Target port.
+ * @param {number} timeout - Timeout in ms.
+ * @returns {Promise<boolean>} true if the connection was established.
+ */
+function tcpConnect(host, port, timeout) {
+    return new Promise(resolve => {
+        if (!host) {
+            resolve(false);
+            return;
+        }
+        const socket = new net.Socket();
+        let done = false;
+        const finish = connected => {
+            if (!done) {
+                done = true;
+                socket.destroy();
+                resolve(connected);
+            }
+        };
+        socket.setTimeout(timeout);
+        socket.once('connect', () => finish(true));
+        socket.once('timeout', () => finish(false));
+        socket.once('error', () => finish(false));
+        socket.connect(port, host);
     });
 }
 
