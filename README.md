@@ -81,6 +81,8 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 - (Jey Cee) Create quicklinks for web ports found by port scan
 - (Jey Cee) Call ping.exe directly on Windows instead of using process.env (compact mode)
 - (Jey Cee) Update @all-smart/all-smart-tools to 1.0.16
+- (Jey Cee) Fix adapter crash when port scan runs on an offline device (#63)
+- (Jey Cee) Use default port list if port list in configuration is missing or empty
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**

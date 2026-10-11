@@ -50,6 +50,9 @@ let pingTimeout = null;
 let taskList = [];
 let cronJob = null;
 
+const DEFAULT_PORT_LIST =
+    '20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999';
+
 const FORBIDDEN_CHARS = /[\][*,;'"`<>\\?]/g;
 
 class NetTools extends utils.Adapter {
@@ -233,17 +236,22 @@ class NetTools extends utils.Adapter {
                     if (state.val && !state.ack) {
                         this.setState(id, { val: state.val, ack: true });
                         const parentId = await this.getParentId(id);
-                        const obj = await this.getObjectAsync(parentId);
-                        if (obj === null || obj === undefined) {
-                            this.log.warn(`Object ${parentId} not found`);
-                            return;
+                        try {
+                            const obj = await this.getObjectAsync(parentId);
+                            if (obj === null || obj === undefined) {
+                                this.log.warn(`Object ${parentId} not found`);
+                                return;
+                            }
+                            const portsState = await this.getStateAsync(`${parentId}.portList`);
+                            await this.scanPortsInBatches(parentId, obj.native.ip, portsState ? portsState.val : null);
+                        } catch (err) {
+                            this.log.error(`Port scan for ${parentId} failed: ${err}`);
+                        } finally {
+                            // Always close a waiting progress dialog in the device manager
+                            if (this.deviceManagement) {
+                                this.deviceManagement.handleScanFinished(parentId);
+                            }
                         }
-                        let ports = await this.getStateAsync(`${parentId}.portList`);
-                        if (!ports) {
-                            ports = this.config.portList.split(',');
-                        }
-
-                        await this.scanPortsInBatches(parentId, obj.native.ip, ports.val);
                     }
                     break;
             }
@@ -330,7 +338,7 @@ class NetTools extends utils.Adapter {
         if (typeof ports === 'string' && ports.length > 0) {
             ports = ports.split(',').map(p => p.trim());
         } else if (!ports) {
-            ports = this.config.portList.split(',').map(p => p.trim());
+            ports = this.getConfiguredPorts();
         } else if (!Array.isArray(ports)) {
             this.log.error('Invalid ports parameter: expected array or string');
             return;
@@ -358,10 +366,21 @@ class NetTools extends utils.Adapter {
         await this.updateQuicklinks(id, ip, foundPorts.flat());
 
         this.log.info('Port scan finished');
-        // Trigger refresh in DM if active
-        if (this.deviceManagement) {
-            this.deviceManagement.handleScanFinished(id);
-        }
+    }
+
+    /**
+     * Returns the ports from the adapter configuration as array.
+     * Falls back to the default port list if the configuration is missing or empty.
+     *
+     * @returns {string[]} Array of ports.
+     */
+    getConfiguredPorts() {
+        const portList = typeof this.config.portList === 'string' ? this.config.portList : '';
+        const ports = portList
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p !== '');
+        return ports.length ? ports : DEFAULT_PORT_LIST.split(',').map(p => p.trim());
     }
 
     /**
@@ -927,8 +946,7 @@ class NetTools extends utils.Adapter {
 
     async extendHostInformation() {
         if (this.config.portScan === true) {
-            const ports = this.config.portList.split(',');
-            await this.scanPortsInBatches('localhost', '127.0.0.1', ports);
+            await this.scanPortsInBatches('localhost', '127.0.0.1', this.getConfiguredPorts());
         }
     }
 
