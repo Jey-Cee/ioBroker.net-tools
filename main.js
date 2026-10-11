@@ -6,6 +6,7 @@
 
 const utils = require('@iobroker/adapter-core');
 const os = require('node:os');
+const net = require('node:net');
 const dmNetTools = require('./lib/devicemgmt.js');
 const migration = require('./lib/migration.js');
 const asTools = require('@all-smart/all-smart-tools');
@@ -22,8 +23,6 @@ const { calculateSubnetMask } = require('./lib/ip-calculator');
 
 let timer = null;
 let isStopping = false;
-let wolTries = 3;
-let wolTimer = null;
 let discoverTimeout = null;
 let pingTimeout = null;
 /**
@@ -49,6 +48,10 @@ let pingTimeout = null;
  */
 let taskList = [];
 let cronJob = null;
+
+const WOL_PACKET_COUNT = 3;
+const WOL_PACKET_DELAY = 750;
+const WOL_SEND_TIMEOUT = 2000;
 
 const DEFAULT_PORT_LIST =
     '20, 21, 22, 23, 25, 53, 80, 110, 119, 123, 143, 161, 162, 194, 443, 445, 3306, 3389, 5900, 6379, 8080, 8443, 9090, 9200, 9999';
@@ -142,10 +145,6 @@ class NetTools extends utils.Adapter {
             if (timer) {
                 clearTimeout(timer);
                 timer = null;
-            }
-            if (wolTimer) {
-                clearTimeout(wolTimer);
-                wolTimer = null;
             }
             if (discoverTimeout) {
                 clearTimeout(discoverTimeout);
@@ -270,56 +269,52 @@ class NetTools extends utils.Adapter {
     async onMessage(obj) {
         this.log.debug(`Message received: ${JSON.stringify(obj)}`);
         if (typeof obj === 'object' && obj.message && !obj.command.includes('dm:')) {
-            if (obj.command === 'send') {
-                switch (obj.command) {
-                    case 'ping': {
-                        // Try to ping one IP or name
-                        if (obj.callback && obj.message) {
-                            //ping.probe(obj.message, {log: this.log.debug}, (err, result) =>
-                            ping.probe(obj.message, {}, (err, result) =>
-                                this.sendTo(obj.from, obj.command, { result }, obj.callback),
-                            );
+            switch (obj.command) {
+                case 'ping': {
+                    // Try to ping one IP or name
+                    if (obj.callback && obj.message) {
+                        //ping.probe(obj.message, {log: this.log.debug}, (err, result) =>
+                        ping.probe(obj.message, {}, (err, result) =>
+                            this.sendTo(obj.from, obj.command, { result }, obj.callback),
+                        );
+                    }
+                    break;
+                }
+                case 'getMac': {
+                    if (obj.callback && obj.message) {
+                        this.sendTo(obj.from, obj.command, await arp.toMAC(obj.message), obj.callback);
+                    }
+                    break;
+                }
+                case 'wol':
+                case 'wake': {
+                    const sent = await this.wake(obj.message);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, sent, obj.callback);
+                    }
+                    break;
+                }
+                case 'deleteDevice': {
+                    await this.delDevice(obj.message).then(() => {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, 'Device deleted', obj.callback);
                         }
-                        break;
-                    }
-                    case 'getMac': {
-                        if (obj.callback && obj.message) {
-                            this.sendTo(obj.from, obj.command, await arp.toMAC(obj.message), obj.callback);
-                        }
-                        break;
-                    }
-                    case 'wol': {
-                        if (obj.callback && obj.message) {
-                            this.wake(obj.message);
-                            this.sendTo(obj.from, obj.command, null, obj.callback);
-                        }
-                        break;
-                    }
-                    case 'deleteDevice': {
-                        await this.delDevice(obj.message).then(() => {
-                            if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, 'Device deleted', obj.callback);
-                            }
-                        });
-                        break;
-                    }
-                    case 'addDevice': {
-                        await this.addDevice(
-                            obj.message.ip,
-                            obj.message.name,
-                            obj.message.enabled,
-                            obj.message.mac,
-                        ).then(() => {
+                    });
+                    break;
+                }
+                case 'addDevice': {
+                    await this.addDevice(obj.message.ip, obj.message.name, obj.message.enabled, obj.message.mac).then(
+                        () => {
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, 'Device added', obj.callback);
                             }
-                        });
-                        break;
-                    }
-                    case 'updateDevice': {
-                        await this.updateDevices(obj.message);
-                        break;
-                    }
+                        },
+                    );
+                    break;
+                }
+                case 'updateDevice': {
+                    await this.updateDevices(obj.message);
+                    break;
                 }
             }
         }
@@ -517,24 +512,79 @@ class NetTools extends utils.Adapter {
         return `${this.namespace}.${parentId}`;
     }
 
-    wake(mac) {
-        const device = taskList.find(entry => entry.mac === mac);
-        console.log(device);
-        wol.wake(mac, device?.wakeWithIp ? { address: device.ip } : null, (err, res) => {
-            wolTries = wolTries - 1;
-            if (err) {
-                this.log.debug(`Wake-on-LAN error: ${err}`);
-                wolTries = 3;
+    /**
+     * Sends Wake-on-LAN magic packets to a device.
+     * Sends WOL_PACKET_COUNT packets to every target address with a pause of WOL_PACKET_DELAY ms.
+     *
+     * @param {string} mac - MAC address of the device.
+     * @returns {Promise<boolean>} true if at least one packet was sent successfully.
+     */
+    async wake(mac) {
+        if (typeof mac !== 'string' || !mac.trim()) {
+            this.log.warn('Wake-on-LAN: no MAC address given');
+            return false;
+        }
+        const normalizedMac = normalizeMac(mac);
+        const device = taskList.find(entry => entry?.mac && normalizeMac(entry.mac) === normalizedMac);
+        const addresses = this.getWolAddresses(device);
+
+        let sent = false;
+        for (let i = 1; i <= WOL_PACKET_COUNT; i++) {
+            for (const address of addresses) {
+                try {
+                    await sendMagicPacket(mac, address);
+                    sent = true;
+                    this.log.debug(`Wake-on-LAN packet ${i}/${WOL_PACKET_COUNT} sent to ${mac} via ${address}`);
+                } catch (err) {
+                    this.log.warn(`Wake-on-LAN packet to ${mac} via ${address} failed: ${err}`);
+                }
             }
-            if (wolTries > 0) {
-                wolTimer = setTimeout(() => {
-                    this.wake(mac);
-                }, 750);
-            } else if (wolTries === 0) {
-                wolTries = 3;
+            if (i < WOL_PACKET_COUNT) {
+                if (isStopping) {
+                    break;
+                }
+                await new Promise(resolve => {
+                    // setTimeout returns undefined if the adapter is stopping
+                    if (!this.setTimeout(resolve, WOL_PACKET_DELAY)) {
+                        resolve();
+                    }
+                });
             }
-            this.log.debug(`Wake on LAN trie ${wolTries + 1}: ${res}`);
-        });
+        }
+
+        if (sent) {
+            this.log.info(`Wake-on-LAN packets sent to ${mac} via ${addresses.join(', ')}`);
+        }
+        return sent;
+    }
+
+    /**
+     * Determines the target addresses for Wake-on-LAN packets of a device.
+     *
+     * @param {object} [device] - Entry of the taskList.
+     * @returns {string[]} Target addresses.
+     */
+    getWolAddresses(device) {
+        const host = device?.host;
+        const addresses = [];
+
+        if (device?.wakeWithIp && host) {
+            // Device in another subnet: send to the device itself and to the directed broadcast of its subnet
+            addresses.push(host);
+            if (net.isIPv4(host)) {
+                addresses.push(getLocalBroadcast(host) || `${host.split('.').slice(0, 3).join('.')}.255`);
+            }
+        } else {
+            addresses.push('255.255.255.255');
+            // With multiple network interfaces the limited broadcast only leaves via the default route,
+            // so additionally send to the broadcast address of the interface in the device subnet
+            const broadcast = host && net.isIPv4(host) ? getLocalBroadcast(host) : null;
+            if (broadcast) {
+                addresses.push(broadcast);
+            }
+        }
+
+        return [...new Set(addresses)];
     }
 
     async discover() {
@@ -973,6 +1023,74 @@ class NetTools extends utils.Adapter {
 function getDecimalSeparator() {
     const numberWithDecimalSeparator = 1.1;
     return Intl.NumberFormat().format(numberWithDecimalSeparator).substring(1, 2);
+}
+
+/**
+ * Sends one Wake-on-LAN magic packet. Rejects on error or if sending takes too long.
+ *
+ * @param {string} mac - MAC address of the device.
+ * @param {string} address - Target address.
+ * @returns {Promise<void>}
+ */
+function sendMagicPacket(mac, address) {
+    return new Promise((resolve, reject) => {
+        const guard = setTimeout(() => reject(new Error('timeout')), WOL_SEND_TIMEOUT);
+        wol.wake(mac, { address }).then(
+            () => {
+                clearTimeout(guard);
+                resolve();
+            },
+            err => {
+                clearTimeout(guard);
+                reject(err);
+            },
+        );
+    });
+}
+
+/**
+ * Normalizes a MAC address for comparison (lower case, without separators).
+ *
+ * @param {string} mac - MAC address.
+ * @returns {string} Normalized MAC address.
+ */
+function normalizeMac(mac) {
+    return String(mac)
+        .replace(/[^0-9a-fA-F]/g, '')
+        .toLowerCase();
+}
+
+/**
+ * Converts an IPv4 address into a 32-bit number.
+ *
+ * @param {string} ip - IPv4 address.
+ * @returns {number} IP as number.
+ */
+function ipv4ToNumber(ip) {
+    return ip.split('.').reduce((acc, part) => ((acc << 8) + parseInt(part, 10)) >>> 0, 0);
+}
+
+/**
+ * Returns the broadcast address of the local network interface whose subnet contains the given IP.
+ *
+ * @param {string} ip - IPv4 address of the target device.
+ * @returns {string | null} Broadcast address or null if no local interface matches.
+ */
+function getLocalBroadcast(ip) {
+    const target = ipv4ToNumber(ip);
+    for (const addresses of Object.values(os.networkInterfaces())) {
+        for (const iface of addresses || []) {
+            if (iface.family !== 'IPv4' || iface.internal || !iface.netmask) {
+                continue;
+            }
+            const mask = ipv4ToNumber(iface.netmask);
+            if ((ipv4ToNumber(iface.address) & mask) >>> 0 === (target & mask) >>> 0) {
+                const broadcast = ((target & mask) | (~mask >>> 0)) >>> 0;
+                return [24, 16, 8, 0].map(shift => (broadcast >>> shift) & 255).join('.');
+            }
+        }
+    }
+    return null;
 }
 
 if (require.main !== module) {

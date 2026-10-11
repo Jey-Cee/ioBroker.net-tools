@@ -68,6 +68,8 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 
 `sendToAsync('net-tools.x', 'wake', 'MAC ADDRESS')`
 
+The command `'wol'` works as well. Returns `true` if the packets were sent.
+
 ---
 
 ## Changelog
@@ -83,6 +85,9 @@ Remark: This feature is limited to the subnet of the ioBroker host.
 - (Jey Cee) Update @all-smart/all-smart-tools to 1.0.16
 - (Jey Cee) Fix adapter crash when port scan runs on an offline device (#63)
 - (Jey Cee) Use default port list if port list in configuration is missing or empty
+- (Jey Cee) Fix sendTo commands (wake/wol, ping, getMac, addDevice, deleteDevice, updateDevice) being ignored (#71)
+- (Jey Cee) Fix "Wake-on-LAN with IP" sending packets to localhost (#71)
+- (Jey Cee) Wake-on-LAN: also send to the broadcast address of the device subnet, log sent packets, no endless retries on errors
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
