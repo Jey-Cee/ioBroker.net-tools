@@ -178,7 +178,8 @@
       "config": "json"
     },
     "supportedMessages": {
-      "deviceManager": true
+      "deviceManager": true,
+      "help": true
     },
     "dependencies": [
       {

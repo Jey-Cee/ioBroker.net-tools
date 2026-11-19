@@ -22,6 +22,7 @@ const { nslookup } = require('./lib/nslookup');
 const { CronJob } = require('cron');
 const { checkPingRights } = require('./lib/utils');
 const { calculateSubnetMask } = require('./lib/ip-calculator');
+const { COMMANDS, HELP } = require('./lib/help');
 
 let timer = null;
 let isStopping = false;
@@ -307,6 +308,13 @@ class NetTools extends utils.Adapter {
     //  */
     async onMessage(obj) {
         this.log.debug(`Message received: ${JSON.stringify(obj)}`);
+        // the description of all commands for AI agents and scripts, also without a message and without a license
+        if (obj && obj.command === 'help') {
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, { help: HELP, commands: COMMANDS }, obj.callback);
+            }
+            return;
+        }
         if (typeof obj === 'object' && obj.message && !obj.command.includes('dm:')) {
             switch (obj.command) {
                 case 'ping': {
